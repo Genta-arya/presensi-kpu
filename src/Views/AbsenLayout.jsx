@@ -34,6 +34,7 @@ import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { createAbsen } from "../service/Auth/absen.service";
 import Loading from "../components/Loading";
+import { HandleLogin } from "../service/Auth/auth.service";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -59,6 +60,8 @@ const AbsenLayout = () => {
   const arrowControls = useAnimation();
   const navigate = useNavigate();
   const { id } = useParams();
+  const [showPinModal, setShowPinModal] = useState(true);
+  const [pin, setPin] = useState("");
   const x = useMotionValue(0);
 
   const popupRef = useRef();
@@ -299,6 +302,61 @@ const AbsenLayout = () => {
           className="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600"
         >
           Kembali ke Beranda
+        </button>
+      </div>
+    );
+  }
+
+  const handleSubmitPin = async (e) => {
+    e.preventDefault();
+    try {
+      await HandleLogin({ id: id, password: pin });
+      setShowPinModal(false);
+      toast.success("PIN berhasil diverifikasi!");
+    } catch (error) {
+      if (error.response.status === 400) {
+        toast.error(error.response.data.message);
+        return;
+      } else {
+        toast.error("Gagal terhubung ke server. Silakan coba lagi.");
+      }
+    }
+  };
+
+  if (showPinModal) {
+    return (
+      <div className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center text-center px-6">
+        <img
+          src="https://cdn4.iconfinder.com/data/icons/web-ui-color/128/Lock_red-512.png"
+          alt=""
+          className="w-16 h-16 mb-4"
+        />
+        <h2 className="text-lg font-bold text-red-600 mb-2">Masukkan PIN</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Untuk melanjutkan ke absensi
+        </p>
+        <input
+          type="password"
+          value={pin}
+          onChange={(e) => setPin(e.target.value)}
+          className="border px-4 py-2 w-full rounded-md text-center text-lg tracking-widest"
+          maxLength={8}
+          placeholder="••••"
+        />
+        <button
+          onClick={handleSubmitPin}
+          className="mt-4 bg-red-600 text-xs text-white px-4 py-2 w-full rounded hover:bg-red-500"
+        >
+          Verifikasi
+        </button>
+        <button
+          onClick={() => {
+            navigate("/");
+            setShowPinModal(false);
+          }}
+          className="mt-2 border border-gray-400 text-black text-xs  px-4 py-2 w-full rounded "
+        >
+          Batal
         </button>
       </div>
     );

@@ -2,7 +2,7 @@ import axiosInstance from "../axiosInstance";
 
 export const HandleLogin = async (data) => {
   try {
-    const response = await axiosInstance.post("/auth/login", {
+    const response = await axiosInstance.post("/auth/verifikasi", {
       ...data,
     });
     return response.data;

@@ -2,14 +2,26 @@ import React, { useEffect, useState } from "react";
 import BottomNav from "./BottomNav";
 import Navbar from "../Views/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
-import icon from "../assets/logo.png"; // Pastikan file ini ada
+import icon from "../assets/logo.png";
 
 const Container = ({ children }) => {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 3000); // 2 detik
-    return () => clearTimeout(timer);
+    const lastShown = localStorage.getItem("lastSplashTime");
+    const now = Date.now();
+
+    if (!lastShown || now - parseInt(lastShown) > 5 * 60 * 1000) {
+      // Tampilkan splash jika belum pernah atau sudah lebih dari 5 menit
+      setShowSplash(true);
+      localStorage.setItem("lastSplashTime", now.toString());
+
+      const timer = setTimeout(() => {
+        setShowSplash(false);
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   return (
