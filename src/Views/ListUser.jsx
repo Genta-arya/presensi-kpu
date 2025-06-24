@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../State/useContext.jsx";
 import Container from "../components/Container.jsx";
 
-
 const SkeletonCard = () => (
   <div className="bg-white p-4 rounded-xl   shadow-md border border-gray-200 animate-pulse">
     <div className="flex items-center gap-4 ">
@@ -76,7 +75,6 @@ const ListUser = () => {
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
             >
               <FiRefreshCcw className="text-lg" />
-             
             </button>
           </div>
         </div>
@@ -116,8 +114,21 @@ const ListUser = () => {
                       </p>
                     </div>
                   </div>
-                  <FaChevronRight className="font-bold" />
+                  {user.Absens?.length > 0 ? (
+                    <div className="text-green-600 font-bold text-xl">✓</div>
+                  ) : (
+                    <FaChevronRight className="font-bold text-gray-400" />
+                  )}
                 </div>
+
+                {/* Tambahkan tulisan Sudah Absen jika ada absen */}
+                {user.Absens?.length > 0 && (
+                  <div className="mt-3 bg-green-500 rounded-md py-2 border-t border-green-500 text-center">
+                    <p className="text-sm text-white font-semibold">
+                      Sudah Absen
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
