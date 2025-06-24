@@ -13,6 +13,7 @@
     "axios": "^1.10.0",
     "framer-motion": "^12.18.1",
     "leaflet": "^1.9.4",
+    "leaflet-routing-machine": "^3.2.12",
     "leaflet.locatecontrol": "^0.84.2",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.522.0",
