@@ -242,14 +242,14 @@ const AbsenLayout = () => {
       const screenWidth = window.innerWidth;
       await arrowControls.start({
         x: screenWidth - 100,
-        transition: { duration: 0.4 },
+        transition: { duration: 0.2, ease: "easeInOut" },
       });
       setShowConfirm(true);
       await arrowControls.start({
         x: 0,
         transition: { type: "spring", stiffness: 200 },
       });
-      setTimeout(() => setShowText(true), 200);
+      setTimeout(() => setShowText(true), 100);
     },
     onSwipedDown: () => setShowConfirm(false),
     preventScrollOnSwipe: true,
@@ -476,7 +476,11 @@ const AbsenLayout = () => {
                 <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto" />
                 <FaTimes
                   className="cursor-pointer absolute right-4"
-                  onClick={() => setShowConfirm(false)}
+                  onClick={() => {
+                    setShowConfirm(false);
+                    setShowText(true);
+                  
+                  }}
                 />
               </div>
               <h2 className="text-lg font-semibold mb-2 text-center">
