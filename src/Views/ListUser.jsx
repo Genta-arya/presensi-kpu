@@ -5,6 +5,7 @@ import { FaChevronRight } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../State/useContext.jsx";
 import Container from "../components/Container.jsx";
+import { motion } from "framer-motion";
 
 const SkeletonCard = () => (
   <div className="bg-white p-4 rounded-xl   shadow-md border border-gray-200 animate-pulse">
@@ -89,13 +90,21 @@ const ListUser = () => {
           <p className="text-gray-500 text-center">Tidak ditemukan.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 gap-2 pb-20 ">
-            {filteredUsers.map((user) => (
-              <div
+            {filteredUsers.map((user, index) => (
+              <motion.div
+                key={user.id}
                 onClick={() => {
                   setSelectedUser(user);
                   navigate(`/absensi/${user.id}`);
                 }}
-                key={user.id}
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{
+                  delay: index * 0.05,
+                  duration: 0.8,
+                  type: "spring",
+                  stiffness: 300,
+                }}
                 className="bg-white p-4 rounded-xl shadow-md border border-red-100 hover:shadow-lg transition cursor-pointer"
               >
                 <div className="flex justify-between items-center gap-4">
@@ -121,7 +130,6 @@ const ListUser = () => {
                   )}
                 </div>
 
-                {/* Tambahkan tulisan Sudah Absen jika ada absen */}
                 {user.Absens?.length > 0 && (
                   <div className="mt-3 bg-green-500 rounded-md py-2 border-t border-green-500 text-center">
                     <p className="text-sm text-white font-semibold">
@@ -129,7 +137,7 @@ const ListUser = () => {
                     </p>
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
