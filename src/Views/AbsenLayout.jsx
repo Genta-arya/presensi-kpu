@@ -223,7 +223,7 @@ const AbsenLayout = () => {
       await createAbsen({
         userId: id,
         img_ttd: ttdImage,
-        koordinat: koordinat, 
+        koordinat: koordinat,
         status: "hadir",
       });
 
@@ -239,6 +239,8 @@ const AbsenLayout = () => {
 
   const swipeHandlers = useSwipeable({
     onSwipedRight: async () => {
+      if (showConfirm) return; // <-- cegah swipe tumpuk
+
       const screenWidth = window.innerWidth;
       await arrowControls.start({
         x: screenWidth - 100,
@@ -479,7 +481,6 @@ const AbsenLayout = () => {
                   onClick={() => {
                     setShowConfirm(false);
                     setShowText(true);
-                  
                   }}
                 />
               </div>
