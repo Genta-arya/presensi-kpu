@@ -25,6 +25,10 @@ const ListUser = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [countSudah, setCountSudah] = useState(0);
+  const [countBelum, setCountBelum] = useState(0);
+
   const { setSelectedUser } = useUserContext();
 
   const fetchData = async () => {
@@ -32,6 +36,15 @@ const ListUser = () => {
       setLoading(true);
       const response = await listUser();
       const data = response?.data || [];
+
+      // Hitung jumlah yang sudah dan belum absen
+      const sudah = data.filter((user) => user.Absens?.length > 0).length;
+      const belum = data.filter(
+        (user) => !user.Absens || user.Absens.length === 0
+      ).length;
+
+      setCountSudah(sudah);
+      setCountBelum(belum);
       setUsers(data);
       setFilteredUsers(data);
     } catch (error) {
@@ -56,6 +69,30 @@ const ListUser = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    let result = users;
+
+    // filter berdasarkan nama atau NIP
+    if (search) {
+      result = result.filter(
+        (user) =>
+          user.name?.toLowerCase().includes(search) ||
+          user.nip?.toLowerCase().includes(search)
+      );
+    }
+
+    // filter berdasarkan status absen
+    if (filterStatus === "sudah") {
+      result = result.filter((user) => user.Absens?.length > 0);
+    } else if (filterStatus === "belum") {
+      result = result.filter(
+        (user) => !user.Absens || user.Absens.length === 0
+      );
+    }
+
+    setFilteredUsers(result);
+  }, [search, users, filterStatus]);
+
   return (
     <>
       <Container>
@@ -78,6 +115,15 @@ const ListUser = () => {
               <FiRefreshCcw className="text-lg" />
             </button>
           </div>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="border w-full border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            <option value="all">Semua ({users.length})</option>
+            <option value="sudah">Sudah Absen ({countSudah})</option>
+            <option value="belum">Belum Absen ({countBelum})</option>
+          </select>
         </div>
 
         {loading ? (
