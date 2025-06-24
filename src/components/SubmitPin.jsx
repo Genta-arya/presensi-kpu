@@ -6,6 +6,7 @@ const SubmitPin = ({
   setPin,
   handleSubmitPin,
   navigate,
+  loadingPin,
   setShowPinModal,
 }) => {
   const [showPin, setShowPin] = useState(false);
@@ -40,7 +41,7 @@ const SubmitPin = ({
           onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
           className="border border-red-500 px-4 py-2 pr-12 text-red-600 w-full rounded-md text-center text-2xl tracking-widest placeholder-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
           maxLength={8}
-          placeholder="********"
+          placeholder="8 digit Angka PIN"
           required
         />
         <button
