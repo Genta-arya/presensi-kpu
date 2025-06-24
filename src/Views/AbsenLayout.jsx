@@ -219,9 +219,11 @@ const AbsenLayout = () => {
     setLoading(true);
     try {
       const ttdImage = sigCanvas.current.getCanvas().toDataURL("image/png");
+      const koordinat = `${coords.lat},${coords.lng}`;
       await createAbsen({
         userId: id,
         img_ttd: ttdImage,
+        koordinat: koordinat, 
         status: "hadir",
       });
 
