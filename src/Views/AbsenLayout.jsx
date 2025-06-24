@@ -14,7 +14,13 @@ import "leaflet.locatecontrol";
 
 import { ArrowRightCircle } from "lucide-react";
 import { toast } from "sonner";
-import { FaCalendar, FaSync, FaTimes } from "react-icons/fa";
+import {
+  FaCalendar,
+  FaCheck,
+  FaSpellCheck,
+  FaSync,
+  FaTimes,
+} from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import Lottie from "lottie-react";
 import successAnimation from "../assets/Sukses.json";
@@ -212,7 +218,7 @@ const AbsenLayout = () => {
       return;
     }
 
-    if (distance > 3000) {
+    if (distance > 100) {
       toast.error("Lokasi kamu terlalu jauh dari titik kantor.");
       return;
     }
@@ -264,12 +270,14 @@ const AbsenLayout = () => {
   useEffect(() => {
     const savedTTD = localStorage.getItem("ttd_cache");
     if (savedTTD && sigCanvas.current) {
-      const img = new Image();
-      img.src = savedTTD;
-      img.onload = () => {
-        const ctx = sigCanvas.current.getCanvas().getContext("2d");
-        ctx.drawImage(img, 0, 0);
-      };
+      // Tambahkan delay agar canvas siap sepenuhnya
+      setTimeout(() => {
+        try {
+          sigCanvas.current.fromDataURL(savedTTD);
+        } catch (err) {
+          console.error("Gagal render TTD dari cache:", err);
+        }
+      }, 300); // 300ms cukup aman
     }
   }, []);
 
@@ -305,7 +313,7 @@ const AbsenLayout = () => {
       ) : (
         <>
           {coords.lat && coords.lng && (
-            <div className="relative w-full h-80 z-0">
+            <div className="relative w-full h-96 z-0">
               <button
                 onClick={goToCurrentLocation}
                 className="absolute z-[999] top-2 right-2 bg-white shadow px-3 py-1 rounded-full text-xs text-gray-700 hover:bg-gray-100 border"
@@ -341,7 +349,7 @@ const AbsenLayout = () => {
                     pathOptions={{
                       color: "red", // warna garis pinggir
                       fillColor: "#ffc0cb", // pink muda
-                      fillOpacity: 0.3, // transparansi 30%
+                      fillOpacity: 0.4, // transparansi 30%
                     }}
                   />
 
@@ -364,14 +372,14 @@ const AbsenLayout = () => {
                 </>
               </MapContainer>
               {distance !== null && !isLoadingUser && (
-                <div className="text-xs  text-center mt-2 flex flex-col items-center gap-2">
-                  <p className={` text-black font-bold`}>
-                    Jarak kamu dari titik kantor
+                <div className="absolute z-[999] bottom-2 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-80 rounded-md px-4 py-1 text-center text-xs shadow">
+                  <p className="text-black font-semibold">
+                    Jarak kamu dari titik kantor:
                   </p>
                   <p
-                    className={` w-fit p-1 rounded-full px-4  ${
+                    className={`mt-1 px-3 py-1 rounded-full text-white ${
                       distance > 100 ? "bg-red-600" : "bg-green-600"
-                    } text-white`}
+                    }`}
                   >
                     {distance.toFixed(2)} meter
                   </p>
@@ -382,7 +390,7 @@ const AbsenLayout = () => {
         </>
       )}
 
-      <div className="mx-auto rounded-t-lg mt-14 bg-white px-5 pt-8 space-y-6">
+      <div className="mx-auto rounded-t-lg  bg-white px-5 pt-8 space-y-6">
         <div className="text-gray-700 font-bold text-sm border-b pb-2 mb-4 flex items-center gap-2">
           {isLoadingUser ? (
             <>
@@ -398,7 +406,7 @@ const AbsenLayout = () => {
         </div>
 
         <div className="text-gray-700 text-sm border-b pb-2 mb-4 flex items-center gap-2">
-          <FaCalendar />
+          <FaCalendar className="text-xl text-red-600" />
           {isLoadingUser ? (
             <div className="w-40 h-4 bg-gray-200 animate-pulse rounded" />
           ) : (
@@ -436,7 +444,7 @@ const AbsenLayout = () => {
 
             {!isLoadingUser && (
               <div className="mt-4 pb-8">
-                <motion.div
+                {/* <motion.div
                   {...swipeHandlers}
                   style={{ backgroundColor: bgColor }}
                   className="flex items-center space-x-2 border rounded-md py-2 cursor-pointer transition overflow-hidden"
@@ -455,7 +463,15 @@ const AbsenLayout = () => {
                       Geser ke kanan untuk konfirmasi
                     </span>
                   )}
-                </motion.div>
+                </motion.div> */}
+
+                <button
+                  onClick={() => setShowConfirm(true)}
+                  className="bg-red-600 w-full text-white py-2 rounded-md hover:bg-red-500 flex items-center justify-center gap-2"
+                >
+                  <FaCheck size={20} />
+                  Konfirmasi Absen
+                </button>
 
                 <button
                   type="button"
@@ -463,7 +479,7 @@ const AbsenLayout = () => {
                     localStorage.removeItem("ttd_cache");
                     navigate("/");
                   }}
-                  className="w-full text-xs mt-3 hover:opacity-75 border border-gray-400 text-black px-4 py-2 rounded"
+                  className="w-full text-xs mt-3 hover:opacity-75 border border-gray-400 text-black px-4 py-3 rounded"
                 >
                   Kembali
                 </button>
@@ -499,23 +515,22 @@ const AbsenLayout = () => {
                   onClick={() => {
                     setShowConfirm(false);
                     setShowText(true);
-                    window.location.reload();
                   }}
                 />
               </div>
-              <h2 className="text-lg font-semibold mb-2 text-center">
+              <h2 className="text-lg font-semibold mb-2 text-center ">
                 Konfirmasi
               </h2>
               <p className="text-sm text-gray-600 mb-4 text-center">
                 Pastikan lokasi dan tanda tangan kamu sesuai.
               </p>
-              <div className="flex justify-center gap-4">
+              <div className="flex justify-center gap-4 mt-10">
                 <button
                   onClick={() => {
                     handleSave();
                     setShowConfirm(false);
                   }}
-                  className="bg-red-600 w-full text-white px-4 py-2 rounded-full hover:bg-red-500"
+                  className="bg-red-600 w-full  text-white px-4 py-2 rounded-full hover:bg-red-500"
                 >
                   Lanjutkan
                 </button>

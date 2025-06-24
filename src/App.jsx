@@ -10,6 +10,8 @@ const AppRoutes = () => {
     <Router>
       <Routes>
         <Route path="/" element={<ListUser />} />
+          <Route path="/presensi-apel" element={<ListUser />} />
+            <Route path="/presensi-rapat" element={<ListUser />} />
         <Route path='/absensi/:id' element={<AbsenLayout />} />
        
       </Routes>
