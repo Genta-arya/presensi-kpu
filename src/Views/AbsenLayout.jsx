@@ -216,6 +216,7 @@ const AbsenLayout = () => {
       toast.error("Lokasi kamu terlalu jauh dari titik kantor.");
       return;
     }
+
     setLoading(true);
     try {
       const ttdImage = sigCanvas.current.getCanvas().toDataURL("image/png");
@@ -223,50 +224,54 @@ const AbsenLayout = () => {
       await createAbsen({
         userId: id,
         img_ttd: ttdImage,
-        koordinat: koordinat,
+        koordinat,
         status: "hadir",
       });
 
+      localStorage.removeItem("ttd_cache"); // HAPUS CACHE
       setShowSuccessModal(true);
     } catch (error) {
       toast.error("Gagal melakukan absensi. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
-
-    // TODO: Kirim data ke backend
   };
-const confirmRef = useRef(false); 
-  const swipeHandlers = useSwipeable({
-  onSwipedRight: async () => {
-    if (confirmRef.current) return; // kalau modal terbuka, jangan swipe
 
-    confirmRef.current = true; // langsung lock dulu
-    const screenWidth = window.innerWidth;
-    await arrowControls.start({
-      x: screenWidth - 100,
-      transition: { duration: 0.2, ease: "easeInOut" },
-    });
-    setShowConfirm(true); // munculkan modal
-    await arrowControls.start({
-      x: 0,
-      transition: { type: "spring", stiffness: 200 },
-    });
-    setTimeout(() => setShowText(true), 100);
-  },
-  onSwipedDown: () => {
-    confirmRef.current = false; // buka lock saat modal ditutup
-    setShowConfirm(false);
-  },
-  preventScrollOnSwipe: true,
-  trackMouse: true,
-});
+  const swipeHandlers = useSwipeable({
+    onSwipedRight: async () => {
+      const screenWidth = window.innerWidth;
+      await arrowControls.start({
+        x: screenWidth - 100,
+        transition: { duration: 0.2, ease: "easeInOut" },
+      });
+      setShowConfirm(true);
+      await arrowControls.start({
+        x: 0,
+        transition: { type: "spring", stiffness: 200 },
+      });
+      setTimeout(() => setShowText(true), 100);
+    },
+    onSwipedDown: () => setShowConfirm(false),
+    preventScrollOnSwipe: true,
+    trackMouse: true,
+  });
 
   const goToCurrentLocation = () => {
     if (coords.lat && coords.lng && mapRef.current) {
       mapRef.current.setView([coords.lat, coords.lng], 18); // Zoom 18 ke posisi device
     }
   };
+  useEffect(() => {
+    const savedTTD = localStorage.getItem("ttd_cache");
+    if (savedTTD && sigCanvas.current) {
+      const img = new Image();
+      img.src = savedTTD;
+      img.onload = () => {
+        const ctx = sigCanvas.current.getCanvas().getContext("2d");
+        ctx.drawImage(img, 0, 0);
+      };
+    }
+  }, []);
 
   if (loading) return <Loading />;
   if (isAbsen) {
@@ -420,6 +425,12 @@ const confirmRef = useRef(false);
                 ref={sigCanvas}
                 penColor="black"
                 canvasProps={{ className: "w-full h-52 rounded-md" }}
+                onEnd={() => {
+                  const ttd = sigCanvas.current
+                    .getCanvas()
+                    .toDataURL("image/png");
+                  localStorage.setItem("ttd_cache", ttd);
+                }}
               />
             </div>
 
@@ -448,7 +459,10 @@ const confirmRef = useRef(false);
 
                 <button
                   type="button"
-                  onClick={() => navigate("/")}
+                  onClick={() => {
+                    localStorage.removeItem("ttd_cache");
+                    navigate("/");
+                  }}
                   className="w-full text-xs mt-3 hover:opacity-75 border border-gray-400 text-black px-4 py-2 rounded"
                 >
                   Kembali
@@ -485,6 +499,7 @@ const confirmRef = useRef(false);
                   onClick={() => {
                     setShowConfirm(false);
                     setShowText(true);
+                    window.location.reload();
                   }}
                 />
               </div>
@@ -536,7 +551,10 @@ const confirmRef = useRef(false);
                 Kamu telah melakukan absensi hari ini 🎉
               </p>
               <button
-                onClick={() => navigate("/")}
+                onClick={() => {
+                  navigate("/");
+                  localStorage.removeItem("ttd_cache");
+                }}
                 className="bg-green-500 w-full text-white px-4 py-2 rounded-full hover:bg-green-600"
               >
                 Tutup
