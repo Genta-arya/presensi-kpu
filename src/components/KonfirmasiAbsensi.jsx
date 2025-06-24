@@ -5,6 +5,7 @@ import { AlertCircle } from "lucide-react";
 const KonfirmasiAbsensi = ({
   setShowConfirm,
   handleSave,
+  setShowPinModal,
   swipeHandlers = useDragControls(),
 }) => {
   return (

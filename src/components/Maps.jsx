@@ -65,6 +65,7 @@ const Maps = ({
   targetCoords,
   isLoadingUser,
   distance,
+  showPinModal,
 }) => {
   const mapRef = useRef();
   const [pingRadius, setPingRadius] = useState(100);
@@ -83,20 +84,26 @@ const Maps = ({
   }, []);
 
   useEffect(() => {
-    if (
-      mapRef.current &&
-      coords?.lat &&
-      coords?.lng &&
-      targetCoords?.lat &&
-      targetCoords?.lng
-    ) {
-      const bounds = L.latLngBounds([
-        [coords.lat, coords.lng],
-        [targetCoords.lat, targetCoords.lng],
-      ]);
-      mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+    if (!showPinModal) {
+      const timeout = setTimeout(() => {
+        if (
+          mapRef.current &&
+          coords?.lat &&
+          coords?.lng &&
+          targetCoords?.lat &&
+          targetCoords?.lng
+        ) {
+          const bounds = L.latLngBounds([
+            [coords.lat, coords.lng],
+            [targetCoords.lat, targetCoords.lng],
+          ]);
+          mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+        }
+      }, 200); // 200ms delay supaya map siap
+
+      return () => clearTimeout(timeout);
     }
-  }, [coords, targetCoords]);
+  }, [coords, targetCoords, showPinModal]);
 
   const userIcon = new L.Icon({
     iconUrl: icon_user,

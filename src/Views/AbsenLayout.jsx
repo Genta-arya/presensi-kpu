@@ -151,6 +151,7 @@ const AbsenLayout = () => {
       });
 
       setShowSuccessModal(true);
+      
     } catch (error) {
       toast.error("Gagal melakukan absensi. Silakan coba lagi.");
     } finally {
@@ -176,8 +177,9 @@ const AbsenLayout = () => {
     setLoading(true);
     try {
       await HandleLogin({ id: id, password: pin });
+       console.log("Login berhasil, lanjut handleSave");
       setShowPinModal(false);
-      toast.success("PIN berhasil diverifikasi!");
+      
     } catch (error) {
       if (error.response.status === 400) {
         toast.error(error.response.data.message);
@@ -217,6 +219,7 @@ const AbsenLayout = () => {
               coords={coords}
               setDistance={setDistance}
               distance={distance}
+              showPinModal={showPinModal}
               isLoadingUser={isLoadingUser}
               targetCoords={targetCoords}
               getCurrentLocation={getCurrentLocation}
@@ -316,6 +319,7 @@ const AbsenLayout = () => {
       <AnimatePresence>
         {showConfirm && (
           <KonfirmasiAbsensi
+            setShowPinModal={setShowPinModal}
             handleSave={handleSave}
             setShowConfirm={setShowConfirm}
             swipeHandlers={swipeHandlers}
