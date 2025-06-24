@@ -236,27 +236,31 @@ const AbsenLayout = () => {
 
     // TODO: Kirim data ke backend
   };
-
+const confirmRef = useRef(false); 
   const swipeHandlers = useSwipeable({
-    onSwipedRight: async () => {
-      if (showConfirm) return; // <-- cegah swipe tumpuk
+  onSwipedRight: async () => {
+    if (confirmRef.current) return; // kalau modal terbuka, jangan swipe
 
-      const screenWidth = window.innerWidth;
-      await arrowControls.start({
-        x: screenWidth - 100,
-        transition: { duration: 0.2, ease: "easeInOut" },
-      });
-      setShowConfirm(true);
-      await arrowControls.start({
-        x: 0,
-        transition: { type: "spring", stiffness: 200 },
-      });
-      setTimeout(() => setShowText(true), 100);
-    },
-    onSwipedDown: () => setShowConfirm(false),
-    preventScrollOnSwipe: true,
-    trackMouse: true,
-  });
+    confirmRef.current = true; // langsung lock dulu
+    const screenWidth = window.innerWidth;
+    await arrowControls.start({
+      x: screenWidth - 100,
+      transition: { duration: 0.2, ease: "easeInOut" },
+    });
+    setShowConfirm(true); // munculkan modal
+    await arrowControls.start({
+      x: 0,
+      transition: { type: "spring", stiffness: 200 },
+    });
+    setTimeout(() => setShowText(true), 100);
+  },
+  onSwipedDown: () => {
+    confirmRef.current = false; // buka lock saat modal ditutup
+    setShowConfirm(false);
+  },
+  preventScrollOnSwipe: true,
+  trackMouse: true,
+});
 
   const goToCurrentLocation = () => {
     if (coords.lat && coords.lng && mapRef.current) {
