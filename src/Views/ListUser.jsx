@@ -168,7 +168,7 @@ const ListUser = () => {
                       className="w-12 h-12 rounded-full object-cover"
                     />
                     <div>
-                      <h2 className="text-lg font-semibold text-red-600 mb-1">
+                      <h2 className="text-base font-bold text-red-600 mb-1">
                         {user.name || "Tanpa Nama"}
                       </h2>
                       <p className="text-sm text-gray-700">
