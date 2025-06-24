@@ -18,6 +18,7 @@ import AlreadyAbsen from "../components/AlreadyAbsen";
 import LoadingLokasi from "../components/LoadingLokasi";
 import LokasiCheck from "../components/LokasiCheck";
 import KonfirmasiAbsensi from "../components/KonfirmasiAbsensi";
+import { s } from "framer-motion/client";
 
 const AbsenLayout = () => {
   const [dateNow, setDateNow] = useState("");
@@ -39,8 +40,10 @@ const AbsenLayout = () => {
   const x = useMotionValue(0);
 
   useEffect(() => {
-    fetchDate();
-  }, []);
+    if (!showPinModal) {
+      fetchDate();
+    }
+  }, [showPinModal]);
   const targetCoords = { lat: 0.009752495103421941, lng: 110.95552433438533 };
 
   const getCurrentLocation = () => {
@@ -151,7 +154,6 @@ const AbsenLayout = () => {
       });
 
       setShowSuccessModal(true);
-      
     } catch (error) {
       toast.error("Gagal melakukan absensi. Silakan coba lagi.");
     } finally {
@@ -177,9 +179,8 @@ const AbsenLayout = () => {
     setLoading(true);
     try {
       await HandleLogin({ id: id, password: pin });
-       console.log("Login berhasil, lanjut handleSave");
+      console.log("Login berhasil, lanjut handleSave");
       setShowPinModal(false);
-      
     } catch (error) {
       if (error.response.status === 400) {
         toast.error(error.response.data.message);
