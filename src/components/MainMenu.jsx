@@ -25,7 +25,7 @@ const MainMenu = () => {
             <div
               key={index}
               onClick={() => navigate(item.href)}
-              className="bg-white rounded-2xl shadow-md p-8 flex flex-col items-center justify-center gap-2 text-center hover:bg-gray-100  cursor-pointer transition"
+              className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center justify-center gap-2 text-center hover:bg-gray-100  cursor-pointer transition"
             >
               <p className="text-red-600">{item.icon}</p>
               <span className="text-lg font-semibold">{item.name}</span>
