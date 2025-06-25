@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-
+import lock from "../assets/lock.png"
 const SubmitPin = ({
   pin,
   setPin,
@@ -24,9 +24,9 @@ const SubmitPin = ({
       className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center text-center px-6"
     >
       <img
-        src="https://cdn4.iconfinder.com/data/icons/web-ui-color/128/Lock_red-512.png"
+        src={lock}
         alt=""
-        className="w-16 h-16 mb-4"
+        className="w-32 h-32 mb-4 animate-bounce bg-white rounded-full shadow-md p-2 border border-red-200"
       />
       <h2 className="text-lg font-bold text-red-600 mb-2">Masukkan PIN</h2>
       <p className="text-sm text-gray-600 mb-4">Untuk melanjutkan ke absensi</p>

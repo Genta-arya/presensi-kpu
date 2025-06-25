@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import { listUser } from "../service/User/user.services";
 import { FiRefreshCcw, FiSearch } from "react-icons/fi";
 import { FaChevronRight } from "react-icons/fa6";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useUserContext } from "../State/useContext.jsx";
 import Container from "../components/Container.jsx";
 import { motion } from "framer-motion";
+import Navigations from "./Navigation.jsx";
 
 const SkeletonCard = () => (
   <div className="bg-white p-4 rounded-xl   shadow-md border border-gray-200 animate-pulse">
@@ -28,6 +29,15 @@ const ListUser = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [countSudah, setCountSudah] = useState(0);
   const [countBelum, setCountBelum] = useState(0);
+  const pathname = useLocation().pathname;
+  const getTitleFromPath = (path) => {
+    if (path.includes("/presensi-harian")) return "Presensi Harian";
+    if (path.includes("/presensi-apel")) return "Presensi Apel";
+    if (path.includes("/presensi-rapat")) return "Presensi Rapat";
+    return "Presensi";
+  };
+
+  const pageTitle = getTitleFromPath(pathname);
 
   const { setSelectedUser } = useUserContext();
 
@@ -95,7 +105,9 @@ const ListUser = () => {
 
   return (
     <>
-      <Container>
+      <Navigations title={pageTitle} />
+
+      <div className="container mx-auto px-4 py-6">
         <div className="flex  lg:hidden flex-col sm:flex-row justify-between items-center gap-4 mb-6">
           <div className="flex - flex-col  gap-2 w-full ">
             <div className="flex w-full gap-2">
@@ -126,7 +138,7 @@ const ListUser = () => {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="border mb-4 -mt-4 w-full border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+          className="border mb-4 text-sm -mt-4 w-full border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
         >
           <option value="all">Semua ({users.length})</option>
           <option value="sudah">Sudah Absen ({countSudah})</option>
@@ -150,14 +162,7 @@ const ListUser = () => {
                   setSelectedUser(user);
                   navigate(`/absensi/${user.id}`);
                 }}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: index * 0.05,
-                  duration: 0.5,
-                  ease: "easeOut",
-                }}
+              
                 className="bg-white p-4 rounded-xl shadow-md border border-red-100 hover:shadow-lg transition cursor-pointer"
               >
                 <div className="flex justify-between items-center gap-4">
@@ -171,8 +176,8 @@ const ListUser = () => {
                       <h2 className="text-base font-bold text-red-600 mb-1">
                         {user.name || "Tanpa Nama"}
                       </h2>
-                      <p className="text-sm text-gray-700">
-                        <strong>NIP:</strong> {user.nip || "-"}
+                      <p className="text-sm font-bold text-gray-700">
+                        <strong></strong> {user.jabatan || "-"}
                       </p>
                     </div>
                   </div>
@@ -194,7 +199,7 @@ const ListUser = () => {
             ))}
           </div>
         )}
-      </Container>
+      </div>
 
       {/* Desktop block message */}
       <div className="hidden lg:block">

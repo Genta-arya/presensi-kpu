@@ -12,7 +12,6 @@ const Container = ({ children }) => {
     const now = Date.now();
 
     if (!lastShown || now - parseInt(lastShown) > 5 * 60 * 1000) {
-      // Tampilkan splash jika belum pernah atau sudah lebih dari 5 menit
       setShowSplash(true);
       localStorage.setItem("lastSplashTime", now.toString());
 
@@ -52,14 +51,15 @@ const Container = ({ children }) => {
             >
               E-Presensi
             </motion.h1>
-            <motion.p
+            <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="text-sm font-bold text-gray-700"
+              className="text-sm font-bold text-gray-700 leading-snug text-center"
             >
-              Komisi Pemilihan Umum Kabupaten Sekadau
-            </motion.p>
+              <p>Komisi Pemilihan Umum</p>
+              <p>Kabupaten Sekadau</p>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -69,7 +69,6 @@ const Container = ({ children }) => {
           <Navbar />
           <div className="p-3 pt-28 min-h-screen bg-gradient-to-br from-red-100 to-red-200 lg:hidden">
             {children}
-            <BottomNav />
           </div>
         </>
       )}

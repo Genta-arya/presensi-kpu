@@ -2,7 +2,7 @@ import React from 'react'
 import { FaChevronLeft } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 
-const Navigation = ({title}) => {
+const Navigations = ({title}) => {
     const navigate = useNavigate()
   return (
     <div className='flex items-center gap-2 p-4 bg-red-600 text-white'>
@@ -12,4 +12,4 @@ const Navigation = ({title}) => {
   )
 }
 
-export default Navigation
+export default Navigations
