@@ -14,10 +14,10 @@ const AlreadyAbsen = ({ navigate , successAnimation}) => {
           Terima kasih telah melakukan absensi.
         </p>
         <button
-          onClick={() => navigate("/")}
-          className="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600"
+          onClick={() => navigate("/presensi-harian")}
+          className="bg-green-500 w-full  text-white px-4 py-2 rounded-full hover:bg-green-600"
         >
-          Kembali ke Beranda
+          Kembali
         </button>
       </div>
   )
