@@ -11,7 +11,7 @@ const menuItems = [
   },
   { name: "Absen Apel", icon: <Users size={52} />, href: "/presensi-apel" },
   { name: "Absen Rapat", icon: <Mic2 size={52} />, href: "/presensi-rapat" },
-  { name: "Pengajuan", icon: <FilePlus size={52} />, href: "/pengajuan" }, // Tambahkan route ini kalau belum ada
+  { name: "Pengajuan Cuti", icon: <FilePlus size={52} />, href: "/pengajuan" }, // Tambahkan route ini kalau belum ada
 ];
 
 const MainMenu = () => {
