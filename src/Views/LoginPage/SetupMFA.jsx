@@ -5,10 +5,12 @@ import {
   HandlePostMFASetup,
 } from "../../service/Auth/auth.service";
 import { toast } from "sonner";
+import Loading from "../../components/Loading";
 
 const SetupMFA = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const [qr, setQr] = useState(null);
   const [otp, setOtp] = useState("");
@@ -18,6 +20,7 @@ const SetupMFA = () => {
 
     const fetchQR = async () => {
       try {
+        setLoading(true);
         const response = await GetQRForMFASetup(userId);
 
         if (response.status === false) {
@@ -29,6 +32,8 @@ const SetupMFA = () => {
       } catch (err) {
         console.log(err);
         toast.error("Gagal mengambil QR code, coba lagi");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -37,6 +42,7 @@ const SetupMFA = () => {
 
   const handleVerify = async () => {
     try {
+      setLoading(true);
       const response = await HandlePostMFASetup({
         userId,
         otp,
@@ -50,9 +56,12 @@ const SetupMFA = () => {
       }
     } catch (err) {
       toast.error("Gagal verifikasi OTP, coba lagi");
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading) return <Loading />;
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100">
       <div className="bg-white p-8 rounded-xl shadow-lg w-96 space-y-4">

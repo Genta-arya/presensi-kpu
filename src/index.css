@@ -12,3 +12,7 @@
 .swiper-pagination-bullet-active {
   background: rgb(220 38 38); /* red-600 */
 }
+#fr-logo,
+.fr-wrapper a[href*="froala"] {
+  display: none !important;
+}

@@ -9,7 +9,8 @@ import {
   FilePlus,
   X,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -20,6 +21,7 @@ import useCheckLogin from "../State/useLogin";
 import Loading from "./Loading";
 import BottomNav from "./BottomNav";
 import Headers from "./Headers";
+import { FaTag } from "react-icons/fa";
 
 /* SIMPLE FADE */
 const fadeVariant = {
@@ -90,7 +92,7 @@ const MainMenu = () => {
       date: "5 Feb 2026",
       title: "Update Sistem Absensi",
       content:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua., Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. , Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ,, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ,, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     },
     {
       date: "3 Feb 2026",
@@ -117,13 +119,15 @@ const MainMenu = () => {
       <Headers />
 
       {/* INFORMASI */}
+      <div className="px-2">
+
       <motion.div
         variants={fadeVariant}
         initial="hidden"
         animate="show"
         className="mt-6 px-3"
       >
-        <h2 className="text-sm font-bold text-gray-700 mb-3">Informasi</h2>
+        <h2 className="text-sm font-bold text-gray-700 mb-3">Pemberitahuan</h2>
 
         <Swiper
           modules={[Pagination, Autoplay]}
@@ -202,51 +206,62 @@ const MainMenu = () => {
           />
         </div>
       </motion.div>
+      </div>
 
       {/* MODAL FULL INFO */}
-      {activeInfo && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 z-50 bg-black/40 flex"
-          onClick={() => setActiveInfo(null)}
-        >
+      <AnimatePresence>
+        {activeInfo && (
           <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            transition={{ type: "spring", damping: 25 }}
-            onClick={(e) => e.stopPropagation()}
-            className="
-        bg-white w-full
-        rounded-t-2xl
-        h-[90vh]
-        mt-auto
-        flex flex-col
-      "
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 flex"
+            onClick={() => setActiveInfo(null)}
           >
-            {/* HANDLE */}
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto my-3" />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="
+          bg-white w-full
+          rounded-t-2xl
+          h-[50vh]
+          mt-auto
+          flex flex-col
+        "
+            >
+              {/* HANDLE */}
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto my-3" />
 
-            {/* HEADER */}
-            <div className="flex justify-between items-center px-5 mt-8">
-              <h3 className="font-bold text-gray-700">{activeInfo.title}</h3>
-              <X
-                className="text-gray-500 cursor-pointer"
-                onClick={() => setActiveInfo(null)}
-              />
-            </div>
+              {/* HEADER */}
+              <div className="flex justify-between items-center px-5 mt-8">
+                <div className="flex gap-2 items-center">
+                  <FaTag />
+                  <h3 className="font-bold text-gray-700">
+                    {activeInfo.title}
+                  </h3>
+                </div>
+                <X
+                  className="text-gray-500 cursor-pointer"
+                  onClick={() => setActiveInfo(null)}
+                />
+              </div>
 
-            <p className="text-xs text-gray-400 px-5 mt-1">{activeInfo.date}</p>
-
-            {/* CONTENT (SCROLL AREA) */}
-            <div className="px-5 py-4 overflow-y-auto">
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {activeInfo.content}
+              <p className="text-xs text-gray-400 px-5 mt-1 pb-4">
+                {activeInfo.date}
               </p>
-            </div>
+
+              <div className="px-5 py-4 overflow-y-auto flex-1 pb-8 text-justify">
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {activeInfo.content}
+                </p>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
+      </AnimatePresence>
 
       <BottomNav />
     </Container>

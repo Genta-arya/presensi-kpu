@@ -19,13 +19,13 @@ const useCheckLogin = () => {
         setUser(null);
         localStorage.removeItem("token");
         toast.error("Sesi berakhir, silakan login kembali");
-        window.location.href = "/login"; // redirect manual
+        window.location.href = "/login"; 
       }
     } catch (err) {
       setUser(null);
       localStorage.removeItem("token");
       toast.error("Terjadi kesalahan, silakan login kembali");
-      window.location.href = "/login"; // redirect manual
+      window.location.href = "/login"; 
     } finally {
       setIsLoading(false);
     }

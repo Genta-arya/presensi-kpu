@@ -38,18 +38,21 @@ const LoginPage = () => {
         navigate("/");
       }
     } catch (err) {
-      toast.error("Login gagal, periksa NIP dan Password Anda");
+      toast.error(
+        err.response?.data?.message ||
+          "Terjadi kesalahan Login gagal, coba lagi",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // useEffect(() => {
-  //   document.title = "Login - Aplikasi Presensi KPU";
-  //   if (localStorage.getItem("token")) {
-  //     navigate("/login");
-  //   }
-  // }, []);
+  useEffect(() => {
+    document.title = "Login - Aplikasi Presensi KPU";
+    if (localStorage.getItem("token")) {
+      navigate("/login");
+    }
+  }, []);
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
@@ -101,12 +104,27 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-96">
+      <div className="bg-white p-5 rounded-xl shadow-lg w-96 lg:w-[50%] md:w-[80%]">
         <div className="flex gap-4 items-center justify-center mb-6">
           <img src="/logo.png" alt="" className="w-12" />
-          <h2 className="text-2xl font-semibold text-center">
-            {showOtp ? "Verifikasi OTP" : "Silahkan Login"}
-          </h2>
+          <div className="flex flex-col items-center">
+            {showOtp ? (
+              <div className="flex flex-col">
+                <h2 className="text-2xl font-semibold ">
+                  {showOtp ? "Verifikasi OTP" : "Silahkan Login"}
+                </h2>
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                <h1 className="text-base lg:text-lg font-bold text-red-600">
+                  Komisi Pemilihan Umum
+                </h1>
+                <p className="font-bold text-xs lg:text-base">
+                  Kabupaten Sekadau
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {!showOtp ? (
@@ -118,7 +136,7 @@ const LoginPage = () => {
                 placeholder="Masukkan NIP"
                 value={nip}
                 onChange={(e) => setNip(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500"
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 outline-none focus:ring-red-500"
               />
             </div>
 
@@ -129,7 +147,7 @@ const LoginPage = () => {
                 placeholder="Masukkan Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500"
+                className="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>
 
@@ -158,8 +176,9 @@ const LoginPage = () => {
                 type="text"
                 placeholder="6 digit"
                 value={otp}
+                maxLength={6}
                 onChange={(e) => setOtp(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500"
+                className="w-full outline-none  rounded-lg border-2 px-3 py-2 focus:ring-2 focus:ring-red-500"
               />
             </div>
 
@@ -179,6 +198,11 @@ const LoginPage = () => {
             </button>
           </form>
         )}
+        <div className="mt-10 text-center text-gray-500 text-xs">
+          <span className="text-bold text-red-600 font-bold">E-Presensi</span>{" "}
+          &copy; {new Date().getFullYear()} Komisi Pemilihan Umum Kabupaten
+          Sekadau. All rights reserved.
+        </div>
       </div>
     </div>
   );

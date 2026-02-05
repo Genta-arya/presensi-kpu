@@ -16,7 +16,7 @@ const Headers = () => {
   };
 
   return (
-    <div className="flex items-center justify-between border-b-2 rounded-bl-[40px] rounded-br-[40px] pb-10 border-orange-500 bg-white px-4 py-3 rounded-lg shadow-md">
+    <div className="flex items-center justify-between border-b-2 rounded-bl-[40px] rounded-br-[40px] pb-10 border-red-500 bg-white px-4 py-3 rounded-lg shadow-md">
       {/* Avatar + Info */}
 
       <div className="flex justify-between w-full items-center">
@@ -30,10 +30,10 @@ const Headers = () => {
 
           <div className="flex flex-col">
             <p className="text-sm text-black font-bold mb-1">Selamat Datang,</p>
-            <h2 className="text-sm w-52 font-bold text-red-600">
+            <h2 className="text-xs w-48 lg:w-full font-bold text-red-600">
               {selectedUser.name}
             </h2>
-            <p className="text-sm text-gray-700 font-semibold">
+            <p className="text-sm  w-48 lg:w-full text-gray-700 font-semibold">
               {selectedUser.jabatan}
             </p>
           </div>

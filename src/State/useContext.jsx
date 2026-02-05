@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import useCheckLogin from "./useLogin"; // hook lo yang ngecek session
+import useCheckLogin from "./useLogin"; 
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const { user, isLoading, checkSession } = useCheckLogin(); // ambil data user dari hook
+  const { user, isLoading, checkSession } = useCheckLogin(); 
   const [selectedUser, setSelectedUser] = useState(null);
 
-  // update selectedUser otomatis kalau user berhasil login
+
   useEffect(() => {
     if (user) setSelectedUser(user);
   }, [user]);
@@ -15,8 +15,8 @@ export const UserProvider = ({ children }) => {
   return (
     <UserContext.Provider
       value={{
-        selectedUser, // user yang bisa diakses semua komponen
-        setSelectedUser, // kalau mau diubah dari komponen lain
+        selectedUser,
+        setSelectedUser, 
         isLoading,
         checkSession,
       }}

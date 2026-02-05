@@ -8,6 +8,7 @@ import ListUser from "./Views/ListUser";
 import AbsenLayout from "./Views/AbsenLayout";
 import ComingSoon from "./components/ComingSoon";
 import ProtectedRoute from "./State/ProtectedRoute";
+import LaporanKegiatan from "./Views/LaporanKegiatan/LaporanKegiatan";
 
 const AppRoutes = () => {
   return (
@@ -26,7 +27,7 @@ const AppRoutes = () => {
                 <Route path="/" element={<ProtectedRoute element={<MainMenu />} />} />
                 <Route path="/presensi-harian" element={<ProtectedRoute element={<ListUser />} />} />
                 <Route path="/presensi-kegiatan" element={<ProtectedRoute element={<ComingSoon />} />} />
-                <Route path="/laporan-harian" element={<ProtectedRoute element={<ComingSoon />} />} />
+                <Route path="/laporan-harian" element={<ProtectedRoute element={<LaporanKegiatan />} />} />
                 <Route path="/data/absen-masuk" element={<ProtectedRoute element={<ComingSoon />} />} />
                 <Route path="/data/absen-pulang" element={<ProtectedRoute element={<ComingSoon />} />} />
                 <Route path="/data/rekap-absensi" element={<ProtectedRoute element={<ComingSoon />} />} />

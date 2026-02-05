@@ -208,7 +208,7 @@ const AbsenLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white lg:hidden">
+    <div className="min-h-screen bg-white ">
       {isLoadingLocation ? (
         <LoadingLokasi />
       ) : (
