@@ -66,8 +66,8 @@ const Container = ({ children }) => {
 
       {!showSplash && (
         <>
-          <Navbar />
-          <div className="p-3 pt-28 min-h-screen bg-gradient-to-br from-red-100 to-red-200 lg:hidden">
+          {/* <Navbar /> */}
+          <div className="min-h-screen bg-gradient-to-br from-red-100 to-red-200 pb-40 ">
             {children}
           </div>
         </>

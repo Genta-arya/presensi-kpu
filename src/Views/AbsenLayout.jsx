@@ -304,7 +304,7 @@ const AbsenLayout = () => {
                   type="button"
                   onClick={() => {
                     localStorage.removeItem("ttd_cache");
-                    navigate("/presensi-harian");
+                    navigate("/");
                   }}
                   className="w-full text-xs mt-3 hover:opacity-75 border border-gray-400 text-black px-4 py-3 rounded"
                 >
@@ -355,7 +355,7 @@ const AbsenLayout = () => {
               </p>
               <button
                 onClick={() => {
-                  navigate("/presensi-harian");
+                  navigate("/");
                   localStorage.removeItem("ttd_cache");
                 }}
                 className="bg-green-500 w-full text-white px-4 py-2 rounded-full hover:bg-green-600"

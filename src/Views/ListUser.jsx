@@ -29,6 +29,15 @@ const ListUser = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [countSudah, setCountSudah] = useState(0);
   const [countBelum, setCountBelum] = useState(0);
+  const { selectedUser, setSelectedUser } = useUserContext();
+
+  // otomatis filter user yang login
+  useEffect(() => {
+    if (selectedUser?.name) {
+      setSearch(selectedUser.name.toLowerCase());
+    }
+  }, [selectedUser]);
+
   const pathname = useLocation().pathname;
   const getTitleFromPath = (path) => {
     if (path.includes("/presensi-harian")) return "Presensi Harian";
@@ -39,8 +48,6 @@ const ListUser = () => {
 
   const pageTitle = getTitleFromPath(pathname);
 
-  const { setSelectedUser } = useUserContext();
-
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -50,7 +57,7 @@ const ListUser = () => {
       // Hitung jumlah yang sudah dan belum absen
       const sudah = data.filter((user) => user.Absens?.length > 0).length;
       const belum = data.filter(
-        (user) => !user.Absens || user.Absens.length === 0
+        (user) => !user.Absens || user.Absens.length === 0,
       ).length;
 
       setCountSudah(sudah);
@@ -70,7 +77,7 @@ const ListUser = () => {
     const filtered = users.filter(
       (user) =>
         user.name?.toLowerCase().includes(keyword) ||
-        user.nip?.toLowerCase().includes(keyword)
+        user.nip?.toLowerCase().includes(keyword),
     );
     setFilteredUsers(filtered);
   };
@@ -80,14 +87,20 @@ const ListUser = () => {
   }, []);
 
   useEffect(() => {
+    if (selectedUser?.name) {
+      setSearch(selectedUser.name.toLowerCase());
+    }
+  }, [selectedUser]);
+
+  useEffect(() => {
     let result = users;
 
-    // filter berdasarkan nama atau NIP
+    // filter berdasarkan search
     if (search) {
       result = result.filter(
         (user) =>
           user.name?.toLowerCase().includes(search) ||
-          user.nip?.toLowerCase().includes(search)
+          user.nip?.toLowerCase().includes(search),
       );
     }
 
@@ -96,7 +109,7 @@ const ListUser = () => {
       result = result.filter((user) => user.Absens?.length > 0);
     } else if (filterStatus === "belum") {
       result = result.filter(
-        (user) => !user.Absens || user.Absens.length === 0
+        (user) => !user.Absens || user.Absens.length === 0,
       );
     }
 
@@ -107,7 +120,7 @@ const ListUser = () => {
     <>
       <Navigations title={pageTitle} />
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 pt-20">
         <div className="flex  lg:hidden flex-col sm:flex-row justify-between items-center gap-4 mb-6">
           <div className="flex - flex-col  gap-2 w-full ">
             <div className="flex w-full gap-2">
@@ -117,10 +130,22 @@ const ListUser = () => {
                   value={search}
                   onChange={handleSearch}
                   placeholder="Cari nama..."
-                  className="w-full px-4 py-2 pl-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-2 pl-10 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
                 <FiSearch className="absolute top-3 left-3 text-gray-400" />
+
+                {/* Tombol Clear */}
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="absolute top-2 right-3 text-gray-400 hover:text-gray-600"
+                    aria-label="Clear search"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
+
               <button
                 onClick={() => {
                   setSearch("");
@@ -162,7 +187,6 @@ const ListUser = () => {
                   setSelectedUser(user);
                   navigate(`/absensi/${user.id}`);
                 }}
-              
                 className="bg-white p-4 rounded-xl shadow-md border border-red-100 hover:shadow-lg transition cursor-pointer"
               >
                 <div className="flex justify-between items-center gap-4">

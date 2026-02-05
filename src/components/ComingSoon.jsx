@@ -6,8 +6,8 @@ const ComingSoon = () => {
   return (
     <>
       <Navigations title="Kembali" />
-      <div className="mt-32 flex flex-col justify-center items-center bg-white px-4">
-        <div>
+      <div className=" flex flex-col justify-center items-center bg-white px-4">
+        <div className="mt-32">
           <Lottie animationData={comingsoon} loop={true} />
         </div>
         <h1 className="text-2xl font-bold text-red-600 mb-2">

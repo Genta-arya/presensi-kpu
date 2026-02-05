@@ -60,7 +60,7 @@ const SubmitPin = ({
         type="button"
         onClick={() => {
           // windows go back to previous page
-          navigate("/presensi-harian");
+          navigate("/");
           // setShowPinModal(false);
         }}
         className="mt-2 border border-gray-400 text-black text-xs  px-4 py-2 w-full rounded"

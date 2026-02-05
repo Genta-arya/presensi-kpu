@@ -5,3 +5,10 @@
 .leaflet-control-attribution.leaflet-control {
   display: none !important;
 }
+.swiper-pagination-bullet {
+  background: rgb(239 68 68); /* red-500 */
+}
+
+.swiper-pagination-bullet-active {
+  background: rgb(220 38 38); /* red-600 */
+}
