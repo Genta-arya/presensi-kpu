@@ -98,6 +98,12 @@ const SetupMFA = () => {
         >
           Verifikasi & Aktifkan
         </button>
+        <button
+          onClick={() => (window.location.href = "/login")}
+          className="w-full bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700"
+        >
+          Kembali
+        </button>
       </div>
     </div>
   );
