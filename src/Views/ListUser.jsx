@@ -31,13 +31,6 @@ const ListUser = () => {
   const [countBelum, setCountBelum] = useState(0);
   const { selectedUser, setSelectedUser } = useUserContext();
 
-  // otomatis filter user yang login
-  useEffect(() => {
-    if (selectedUser?.name) {
-      setSearch(selectedUser.name.toLowerCase());
-    }
-  }, [selectedUser]);
-
   const pathname = useLocation().pathname;
   const getTitleFromPath = (path) => {
     if (path.includes("/presensi-harian")) return "Presensi Harian";
@@ -46,7 +39,7 @@ const ListUser = () => {
     return "Presensi";
   };
 
-  const pageTitle = getTitleFromPath(pathname);
+  const pageTitle = "Daftar Pegawai";
 
   const fetchData = async () => {
     try {
@@ -85,12 +78,6 @@ const ListUser = () => {
   useEffect(() => {
     fetchData();
   }, []);
-
-  useEffect(() => {
-    if (selectedUser?.name) {
-      setSearch(selectedUser.name.toLowerCase());
-    }
-  }, [selectedUser]);
 
   useEffect(() => {
     let result = users;
@@ -185,7 +172,12 @@ const ListUser = () => {
                 key={user.id}
                 onClick={() => {
                   setSelectedUser(user);
-                  navigate(`/absensi/${user.id}`);
+                  // jika role user adalah admin, arahkan ke halaman absensi dengan user id
+                  {
+                    user.role === "admin"
+                      ? navigate(`/absensi/${user.id}`)
+                      : navigate("/pegawai");
+                  }
                 }}
                 className="bg-white p-4 rounded-xl shadow-md border border-red-100 hover:shadow-lg transition cursor-pointer"
               >

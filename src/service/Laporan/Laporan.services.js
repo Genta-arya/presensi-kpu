@@ -39,3 +39,12 @@ export const DeleteLaporan = async (id) => {
     throw error;
   }
 };
+
+export const GetlaporanById = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/laporan/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

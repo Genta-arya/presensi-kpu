@@ -8,6 +8,9 @@ import {
   ClipboardList,
   FilePlus,
   X,
+  UserSquare2,
+  BarChart3,
+  ClipboardCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -21,8 +24,11 @@ import useCheckLogin from "../State/useLogin";
 import Loading from "./Loading";
 import BottomNav from "./BottomNav";
 import Headers from "./Headers";
-import { FaTag } from "react-icons/fa";
+import { FaBell, FaDatabase, FaTag } from "react-icons/fa";
 import { FaMapPin } from "react-icons/fa6";
+import { toast } from "sonner";
+import { GrDashboard } from "react-icons/gr";
+import { MdDashboard } from "react-icons/md";
 
 /* SIMPLE FADE */
 const fadeVariant = {
@@ -52,10 +58,17 @@ const MenuCard = ({ onClick, icon: Icon, color, label }) => (
       shadow cursor-pointer
       transition-all
       hover:-translate-y-1 hover:shadow-lg
+      h-[90px]
     "
   >
-    <Icon className={`mb-2 ${color}`} size={26} />
-    <p className="text-xs font-semibold text-gray-700">{label}</p>
+    <Icon className={`${color}`} size={26} />
+
+    {/* TEXT AREA FIX HEIGHT */}
+    <div className="mt-2 h-[28px] flex items-center">
+      <p className="text-xs font-semibold text-gray-700 text-center leading-tight">
+        {label}
+      </p>
+    </div>
   </motion.div>
 );
 
@@ -121,92 +134,129 @@ const MainMenu = () => {
 
       {/* INFORMASI */}
       <div className="px-2">
-
-      <motion.div
-        variants={fadeVariant}
-        initial="hidden"
-        animate="show"
-        className="mt-6 px-3"
-      >
-        <h2 className="text-sm font-bold text-gray-700 mb-3">Pemberitahuan</h2>
-
-        <Swiper
-          modules={[Pagination, Autoplay]}
-          pagination={{ clickable: true }}
-          autoplay={{ delay: 4000 }}
-          spaceBetween={12}
-          slidesPerView={1}
-          className="pb-6"
+        <motion.div
+          variants={fadeVariant}
+          initial="hidden"
+          animate="show"
+          className="mt-6 px-3"
         >
-          {infoData.map((item, i) => (
-            <SwiperSlide key={i}>
-              <InfoCard {...item} onClick={() => setActiveInfo(item)} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </motion.div>
+          <div className="flex gap-2 items-center mb-3">
+            <FaBell />
+            <h2 className="text-sm font-bold text-gray-700 ">
+              Pemberitahuan ({infoData.length})
+            </h2>
+          </div>
 
-      {/* MENU */}
-      <motion.div
-        variants={fadeVariant}
-        initial="hidden"
-        animate="show"
-        className="mt-8 px-3"
-      >
-        <h2 className="text-sm font-bold text-gray-700 mb-3">Menu</h2>
+          <Swiper
+            modules={[Pagination, Autoplay]}
+            pagination={{ clickable: true }}
+            autoplay={{ delay: 4000 }}
+            spaceBetween={12}
+            slidesPerView={1}
+            className="pb-6"
+          >
+            {infoData.map((item, i) => (
+              <SwiperSlide key={i}>
+                <InfoCard {...item} onClick={() => setActiveInfo(item)} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </motion.div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <MenuCard
-            onClick={() => navigate(`/absensi/${user?.id}`)}
-            icon={ClipboardList}
-            color="text-indigo-600"
-            label="Presensi"
-          />
-          <MenuCard
-            onClick={() => navigate("/presensi-kegiatan")}
-            icon={Users}
-            color="text-orange-600"
-            label="Kegiatan"
-          />
-          <MenuCard
-            onClick={() => navigate("/laporan-harian")}
-            icon={FilePlus}
-            color="text-teal-600"
-            label="Laporan"
-          />
-        </div>
-      </motion.div>
+        {/* MENU */}
+        <motion.div
+          variants={fadeVariant}
+          initial="hidden"
+          animate="show"
+          className="mt-8 px-3"
+        >
+          <div className="flex gap-2 items-center mb-3">
+            <MdDashboard size={18} />
+            <h2 className="text-sm font-bold text-gray-700 ">Menu</h2>
+          </div>
 
-      {/* DATA ABSENSI */}
-      <motion.div
-        variants={fadeVariant}
-        initial="hidden"
-        animate="show"
-        className="mt-6 px-3"
-      >
-        <h2 className="text-sm font-bold text-gray-700 mb-3">Data Absensi</h2>
+          <div className="grid grid-cols-3 gap-3">
+            <MenuCard
+              onClick={() => navigate(`/absensi/${user?.id}`)}
+              icon={ClipboardCheck}
+              color="text-indigo-600"
+              label="Presensi"
+            />
 
-        <div className="grid grid-cols-3 gap-3">
-          <MenuCard
-            onClick={() => navigate("/data/absen-masuk")}
-            icon={CalendarCheck}
-            color="text-blue-600"
-            label="Masuk"
-          />
-          <MenuCard
-            onClick={() => navigate("/data/absen-pulang")}
-            icon={LogOut}
-            color="text-red-600"
-            label="Pulang"
-          />
-          <MenuCard
-            onClick={() => navigate("/data/rekap-absensi")}
-            icon={FileText}
-            color="text-green-600"
-            label="Rekap"
-          />
-        </div>
-      </motion.div>
+            <MenuCard
+              onClick={() => navigate("/presensi-kegiatan")}
+              icon={Users}
+              color="text-orange-600"
+              label="Kegiatan"
+            />
+
+            <MenuCard
+              onClick={() => navigate("/laporan-harian")}
+              icon={FileText}
+              color="text-teal-600"
+              label="Laporan Harian"
+            />
+
+            <MenuCard
+              onClick={() => navigate("/pegawai")}
+              icon={UserSquare2}
+              color="text-blue-600"
+              label="Daftar Pegawai"
+            />
+
+            <MenuCard
+              onClick={() => toast.info("Fitur ini segera hadir")}
+              icon={BarChart3}
+              color="text-purple-600"
+              label="SKP"
+            />
+            <MenuCard
+              onClick={() =>
+                window.open("https://informasi.kpu-sekadau.my.id/", "_blank")
+              }
+              icon={ClipboardList}
+              color="text-purple-600"
+              label="Informasi Pelayanan"
+            />
+          </div>
+        </motion.div>
+
+        {/* DATA ABSENSI */}
+        <motion.div
+          variants={fadeVariant}
+          initial="hidden"
+          animate="show"
+          className="mt-6 px-3"
+        >
+          <div className="flex gap-2 items-center mb-3">
+            <FaDatabase />
+
+            <h2 className="text-sm font-bold text-gray-700 ">
+              Data Absensi
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <MenuCard
+              onClick={() => navigate("/data/absen-masuk")}
+              icon={CalendarCheck}
+              color="text-blue-600"
+              label="Masuk"
+            />
+            <MenuCard
+              onClick={() => navigate("/data/absen-pulang")}
+              icon={LogOut}
+              color="text-red-600"
+              label="Pulang"
+            />
+            <MenuCard
+              onClick={() => navigate("/data/rekap-absensi")}
+              icon={FileText}
+              color="text-green-600"
+              label="Rekap"
+            />
+          </div>
+        </motion.div>
       </div>
 
       {/* MODAL FULL INFO */}

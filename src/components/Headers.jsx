@@ -16,7 +16,7 @@ const Headers = () => {
   };
 
   return (
-    <div className="flex items-center justify-between border-b-2 rounded-bl-[40px] rounded-br-[40px] pb-10 border-red-500 bg-white px-4 py-3 rounded-lg shadow-md">
+    <div className="flex items-center justify-between border-b-8 rounded-bl-[40px] rounded-br-[40px] pb-10 border-red-500 bg-white px-4 py-3 rounded-lg shadow-md">
       {/* Avatar + Info */}
 
       <div className="flex justify-between w-full items-center">

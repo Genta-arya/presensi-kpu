@@ -9,6 +9,8 @@ import AbsenLayout from "./Views/AbsenLayout";
 import ComingSoon from "./components/ComingSoon";
 import ProtectedRoute from "./State/ProtectedRoute";
 import LaporanKegiatan from "./Views/LaporanKegiatan/LaporanKegiatan";
+import DetailLaporan from "./Views/LaporanKegiatan/DetailLaporan";
+import Berita from "./Views/Berita/Berita";
 
 const AppRoutes = () => {
   return (
@@ -24,14 +26,50 @@ const AppRoutes = () => {
           element={
             <UserProvider>
               <Routes>
-                <Route path="/" element={<ProtectedRoute element={<MainMenu />} />} />
-                <Route path="/presensi-harian" element={<ProtectedRoute element={<ListUser />} />} />
-                <Route path="/presensi-kegiatan" element={<ProtectedRoute element={<ComingSoon />} />} />
-                <Route path="/laporan-harian" element={<ProtectedRoute element={<LaporanKegiatan />} />} />
-                <Route path="/data/absen-masuk" element={<ProtectedRoute element={<ComingSoon />} />} />
-                <Route path="/data/absen-pulang" element={<ProtectedRoute element={<ComingSoon />} />} />
-                <Route path="/data/rekap-absensi" element={<ProtectedRoute element={<ComingSoon />} />} />
-                <Route path="/absensi/:id" element={<ProtectedRoute element={<AbsenLayout />} />} />
+                <Route
+                  path="/"
+                  element={<ProtectedRoute element={<MainMenu />} />}
+                />
+                <Route
+                  path="/presensi-harian"
+                  element={<ProtectedRoute element={<ListUser />} />}
+                />
+                <Route
+                  path="/berita"
+                  element={<ProtectedRoute element={<Berita/>} />}
+                />
+                <Route
+                  path="/presensi-kegiatan"
+                  element={<ProtectedRoute element={<ComingSoon />} />}
+                />
+                <Route
+                  path="/laporan-harian"
+                  element={<ProtectedRoute element={<LaporanKegiatan />} />}
+                />
+                <Route
+                  path="/laporan-harian/:id"
+                  element={<ProtectedRoute element={<DetailLaporan />} />}
+                />
+                <Route
+                  path="/pegawai"
+                  element={<ProtectedRoute element={<ListUser />} />}
+                />
+                <Route
+                  path="/data/absen-masuk"
+                  element={<ProtectedRoute element={<ComingSoon />} />}
+                />
+                <Route
+                  path="/data/absen-pulang"
+                  element={<ProtectedRoute element={<ComingSoon />} />}
+                />
+                <Route
+                  path="/data/rekap-absensi"
+                  element={<ProtectedRoute element={<ComingSoon />} />}
+                />
+                <Route
+                  path="/absensi/:id"
+                  element={<ProtectedRoute element={<AbsenLayout />} />}
+                />
               </Routes>
             </UserProvider>
           }

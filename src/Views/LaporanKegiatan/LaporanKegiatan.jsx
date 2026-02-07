@@ -20,7 +20,8 @@ import {
   DeleteLaporan,
 } from "../../service/Laporan/Laporan.services";
 import SkeletonLaporan from "./SkeletonLaporan";
-import { FaCircle, FaGlobe, FaTag } from "react-icons/fa";
+import { FaChevronLeft, FaCircle, FaGlobe, FaTag } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 
 const LaporanKegiatan = () => {
   const [search, setSearch] = useState("");
@@ -33,7 +34,7 @@ const LaporanKegiatan = () => {
   );
   const [editingId, setEditingId] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
-
+  const navigate = useNavigate();
   const { user, isLoading } = useCheckLogin();
   const [loading, setLoading] = useState(false);
   const [laporan, setLaporan] = useState([]);
@@ -154,10 +155,13 @@ const LaporanKegiatan = () => {
             setShowEditor(false);
             setEditingId(null);
           }}
-          className="flex bg-red-600 p-4 text-lg font-bold items-center gap-2 w-full text-white"
+          className="flex  z-20 w-full items-center justify-start gap-2  p-4 bg-red-600 text-white"
         >
-          <ArrowLeft size={18} />
+          <FaChevronLeft size={18} />
+          <p className="ml-2 text-lg font-bold">
+
           {editingId ? "Edit Laporan" : "Buat Laporan Baru"}
+          </p>
         </button>
 
         <div className="p-4 space-y-4">
@@ -253,9 +257,13 @@ const LaporanKegiatan = () => {
           filteredData.map((item, index) => (
             <div
               key={item.id}
-              className="bg-white   cursor-pointer hover:shadow hover:bg-gray-50 p-3 rounded-lg shadow flex justify-between items-center relative"
+              className="bg-white hover:shadow hover:bg-gray-50 p-3 rounded-lg shadow flex justify-between items-center relative"
             >
-              <div className="pb-5">
+              {/* AREA YANG BOLEH NAVIGATE */}
+              <div
+                onClick={() => navigate(`/laporan-harian/${item.id}`)}
+                className="flex-1 cursor-pointer pb-5"
+              >
                 <p className="text-xs text-gray-400">Laporan #{index + 1}</p>
 
                 <p className="font-semibold text-sm">
@@ -274,6 +282,7 @@ const LaporanKegiatan = () => {
                 </p>
               </div>
 
+              {/* AREA MENU (ANTI NAVIGATE) */}
               <div className="relative bottom-8 right-0">
                 <button
                   onClick={(e) => {
@@ -287,7 +296,8 @@ const LaporanKegiatan = () => {
                 {openMenuId === item.id && (
                   <div className="absolute right-0 mt-2 bg-white border rounded-lg shadow w-32 z-20">
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         handleEdit(item);
                         setOpenMenuId(null);
                       }}
@@ -297,7 +307,8 @@ const LaporanKegiatan = () => {
                     </button>
 
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         handleDelete(item.id);
                         setOpenMenuId(null);
                       }}

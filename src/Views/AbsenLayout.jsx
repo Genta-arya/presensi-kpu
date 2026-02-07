@@ -231,6 +231,7 @@ const AbsenLayout = () => {
         </>
       )}
 
+
       <div className="mx-auto rounded-t-lg  bg-white px-5 pt-8 space-y-6">
         <div className="text-gray-700 font-bold text-sm border-b pb-2 mb-4 flex items-center gap-2">
           {isLoadingUser ? (
