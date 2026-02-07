@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   HandleLoginPage,
@@ -6,13 +6,17 @@ import {
   HandleVerifyMFA,
 } from "../../service/Auth/auth.service";
 import { toast } from "sonner";
-import { s } from "framer-motion/client";
 import Loading from "../../components/Loading";
+import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 
 const LoginPage = () => {
   const [nip, setNip] = useState("");
   const [password, setPassword] = useState("");
-  const [otp, setOtp] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [otp, setOtp] = useState(Array(6).fill(""));
+  const otpRef = useRef([]);
+
   const [userId, setUserId] = useState(null);
   const [showOtp, setShowOtp] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,16 +53,39 @@ const LoginPage = () => {
 
   useEffect(() => {
     document.title = "Login - Aplikasi Presensi KPU";
-    if (localStorage.getItem("token")) {
-      navigate("/login");
-    }
   }, []);
+
+  // OTP handler
+  const handleOtpChange = (val, idx) => {
+    if (!/^[0-9]?$/.test(val)) return;
+
+    const newOtp = [...otp];
+    newOtp[idx] = val;
+    setOtp(newOtp);
+
+    if (val && idx < 5) {
+      otpRef.current[idx + 1].focus();
+    }
+  };
+
+  const handleOtpKey = (e, idx) => {
+    if (e.key === "Backspace" && !otp[idx] && idx > 0) {
+      otpRef.current[idx - 1].focus();
+    }
+  };
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
+    const otpValue = otp.join("");
+
+    if (otpValue.length < 6) {
+      toast.error("OTP belum lengkap");
+      return;
+    }
+
     try {
       setLoading(true);
-      const res = await HandleVerifyMFA({ userId, otp });
+      const res = await HandleVerifyMFA({ userId, otp: otpValue });
 
       if (!res.status) {
         toast.error("OTP salah");
@@ -67,15 +94,13 @@ const LoginPage = () => {
 
       localStorage.setItem("token", res.token);
       navigate("/");
-    } catch (err) {
-      console.log(err);
+    } catch {
       toast.error("Verifikasi OTP gagal, coba lagi");
     } finally {
       setLoading(false);
     }
   };
 
-  // === RESET MFA ===
   const handleResetMFA = async () => {
     if (!nip || !password) {
       toast.error(
@@ -93,36 +118,32 @@ const LoginPage = () => {
       } else {
         toast.error(res.message || "Gagal reset MFA");
       }
-    } catch (err) {
-      console.log(err);
+    } catch {
       toast.error("Reset MFA gagal, coba lagi");
     } finally {
       setLoading(false);
     }
   };
+
   if (loading) return <Loading />;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100">
-      <div className="bg-white p-5 rounded-xl shadow-lg w-96 lg:w-[50%] md:w-[80%]">
+    <div className="min-h-screen  flex items-center justify-center bg-slate-100">
+      <div className="bg-white p-5  rounded-xl shadow-lg w-[90%] lg:w-[50%] md:w-[80%]">
         <div className="flex gap-4 items-center justify-center mb-6">
           <img src="/logo.png" alt="" className="w-12" />
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col ">
             {showOtp ? (
-              <div className="flex flex-col">
-                <h2 className="text-2xl font-semibold ">
-                  {showOtp ? "Verifikasi OTP" : "Silahkan Login"}
-                </h2>
-              </div>
+              <h2 className="text-2xl font-semibold">Verifikasi OTP</h2>
             ) : (
-              <div className="flex flex-col">
+              <>
                 <h1 className="text-base lg:text-lg font-bold text-red-600">
                   Komisi Pemilihan Umum
                 </h1>
                 <p className="font-bold text-xs lg:text-base">
                   Kabupaten Sekadau
                 </p>
-              </div>
+              </>
             )}
           </div>
         </div>
@@ -142,13 +163,21 @@ const LoginPage = () => {
 
             <div>
               <label className="block text-sm mb-1">Password</label>
-              <input
-                type="password"
-                placeholder="Masukkan Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-500"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Masukkan Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-red-500"
+                />
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+                >
+                  {showPassword ? <AiFillEye /> : <AiFillEyeInvisible />}
+                </span>
+              </div>
             </div>
 
             <button
@@ -168,18 +197,23 @@ const LoginPage = () => {
           </form>
         ) : (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div>
-              <label className="block text-sm mb-1">
-                Kode OTP (Google Authenticator)
-              </label>
-              <input
-                type="text"
-                placeholder="6 digit"
-                value={otp}
-                maxLength={6}
-                onChange={(e) => setOtp(e.target.value)}
-                className="w-full outline-none  rounded-lg border-2 px-3 py-2 focus:ring-2 focus:ring-red-500"
-              />
+            <label className="block text-sm mb-1">
+              Kode OTP (Google Authenticator)
+            </label>
+
+            <div className="flex justify-between gap-2">
+              {otp.map((v, i) => (
+                <input
+                  key={i}
+                  ref={(el) => (otpRef.current[i] = el)}
+                  type="text"
+                  maxLength={1}
+                  value={v}
+                  onChange={(e) => handleOtpChange(e.target.value, i)}
+                  onKeyDown={(e) => handleOtpKey(e, i)}
+                  className="w-full text-center border-2 rounded-lg py-2 text-lg focus:ring-2 focus:ring-red-500"
+                />
+              ))}
             </div>
 
             <button
@@ -191,13 +225,14 @@ const LoginPage = () => {
 
             <button
               type="button"
-              onClick={() => (window.location.href = "/login")}
+              onClick={() => window.location.reload()}
               className="w-full bg-gray-600 text-white py-2 rounded-lg"
             >
               Kembali
             </button>
           </form>
         )}
+
         <div className="mt-10 text-center text-gray-500 text-xs">
           <span className="text-bold text-red-600 font-bold">E-Presensi</span>{" "}
           &copy; {new Date().getFullYear()} Komisi Pemilihan Umum Kabupaten

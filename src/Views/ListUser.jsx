@@ -217,19 +217,7 @@ const ListUser = () => {
         )}
       </div>
 
-      {/* Desktop block message */}
-      <div className="hidden lg:block">
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 text-center px-4">
-          <h1 className="text-3xl font-bold text-red-600 mb-4">Ooopsss</h1>
-          <p className="text-lg text-gray-700">
-            Aplikasi ini hanya bisa diakses melalui perangkat{" "}
-            <strong>Smartphone</strong>.
-          </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Silakan buka aplikasi ini di HP kamu ya ✨
-          </p>
-        </div>
-      </div>
+    
     </>
   );
 };
