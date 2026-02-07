@@ -22,6 +22,7 @@ import Loading from "./Loading";
 import BottomNav from "./BottomNav";
 import Headers from "./Headers";
 import { FaTag } from "react-icons/fa";
+import { FaMapPin } from "react-icons/fa6";
 
 /* SIMPLE FADE */
 const fadeVariant = {
@@ -236,9 +237,9 @@ const MainMenu = () => {
               <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto my-3" />
 
               {/* HEADER */}
-              <div className="flex justify-between items-center px-5 mt-8">
+              <div className="flex justify-between  items-center px-5 mt-8">
                 <div className="flex gap-2 items-center">
-                  <FaTag />
+                  <FaMapPin />
                   <h3 className="font-bold text-gray-700">
                     {activeInfo.title}
                   </h3>
@@ -249,7 +250,7 @@ const MainMenu = () => {
                 />
               </div>
 
-              <p className="text-xs text-gray-400 px-5 mt-1 pb-4">
+              <p className="text-xs text-gray-400 border-b-2 px-5 mt-1 pb-4">
                 {activeInfo.date}
               </p>
 

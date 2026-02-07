@@ -1,30 +1,11 @@
-import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import {
-  FaUsers,
-  FaCheckCircle,
-  FaCalendarAlt,
-  FaFilePdf,
-  FaSignOutAlt,
-  FaHome,
-} from "react-icons/fa";
-import { useUserContext } from "../State/useContext";
-import { FaGear, FaPerson } from "react-icons/fa6";
+import { NavLink } from "react-router-dom";
+import { FaHome } from "react-icons/fa";
+import { FaGear } from "react-icons/fa6";
 
 const BottomNav = () => {
-  const navigate = useNavigate();
-  const { selectedUser, setSelectedUser } = useUserContext();
-  const handleSignOut = () => {
-    localStorage.removeItem("token");
-    setSelectedUser(null);
-    navigate("/login");
-  };
-
-  console.log("Selected User in BottomNav:", selectedUser);
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow z-40">
-      <div className="flex justify-around items-center h-20">
+    <div className="fixed bottom-0 left-0 right-0 border-red-600 bg-white border-t-2 shadow z-40">
+      <div className="flex justify-around items-center h-16">
         <NavLink
           to="/"
           className={({ isActive }) =>
@@ -33,7 +14,7 @@ const BottomNav = () => {
             }`
           }
         >
-          <FaHome size={32} className="mb-1" />
+          <FaHome size={28} className="mb-1" />
           Beranda
         </NavLink>
 
@@ -45,17 +26,9 @@ const BottomNav = () => {
             }`
           }
         >
-          <FaGear size={32} className="mb-1" />
+          <FaGear size={28} className="mb-1" />
           Pengaturan
         </NavLink>
-
-        {/* <button
-          onClick={handleSignOut}
-          className="flex flex-col items-center text-xs text-gray-500"
-        >
-          <FaSignOutAlt size={20} />
-          Keluar
-        </button> */}
       </div>
     </div>
   );

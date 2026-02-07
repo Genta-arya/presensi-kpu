@@ -5,22 +5,7 @@ import FroalaEditor from "react-froala-wysiwyg";
 import "froala-editor/js/plugins.pkgd.min.js";
 import "froala-editor/css/froala_editor.pkgd.min.css";
 const Editor = ({ editorContent = "", setEditorContent }) => {
-  const handlePostClick = () => {
-    let sanitizedContent = DOMPurify.sanitize(editorContent);
-
-    const div = document.createElement("div");
-    div.innerHTML = sanitizedContent;
-    const poweredByElements = div.querySelectorAll("p");
-
-    poweredByElements.forEach((element) => {
-      if (element.textContent.includes("Powered by")) {
-        element.remove();
-      }
-    });
-
-    sanitizedContent = div.innerHTML;
-  };
-
+  
   const handleModelChange = (content) => {
     setEditorContent(content);
   };
@@ -30,44 +15,7 @@ const Editor = ({ editorContent = "", setEditorContent }) => {
       model={editorContent}
       onModelChange={handleModelChange}
       config={{
-        toolbarButtons: [
-          "bold",
-          "italic",
-          "underline",
-          "insertLink",
-          "formatOL",
-          "formatUL",
-          "alignLeft",
-          "alignCenter",
-          "alignRight",
-          "alignJustify",
-          "quote",
-          " table",
-          "paragraphFormat",
-          "paragraphStyle",
-          "fontSize",
-          "textColor",
-          "backgroundColor",
-          "markdown",
-          "specialCharacters",
-          "insertHR",
-          "selectAll",
-          "clearFormatting",
-          "print",
-          "getPDF",
-          "spellChecker",
-          "html",
-          "help",
-          "fullscreen",
-          "undo",
-          "redo",
-          "removeFormat",
-          "insertImage",
-          "insertTable",
-          "outdent",
-
-          "indent",
-        ],
+        toolbarButtons: ["bold", "italic", "underline"],
         events: {
           "froalaEditor.initialized": function () {
             console.log("Froala Editor initialized");
