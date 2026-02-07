@@ -5,6 +5,7 @@ import { ArrowUp, ImageOff, Search, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { FaChevronLeft } from "react-icons/fa";
 import { toast } from "sonner";
+import BottomNav from "../../components/BottomNav";
 
 const Berita = () => {
   const { isLoading } = useCheckLogin();
@@ -80,13 +81,29 @@ const Berita = () => {
   return (
     <>
       {/* HEADER */}
-      <div className="fixed z-20 w-full bg-red-600 text-white">
+      <div className="fixed z-20 w-full bg-red-600 text-white ">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
-            <FaChevronLeft onClick={() => navigate("/")} />
-            {!showSearch && (
-              <span className="ml-2 text-lg font-bold">Kembali</span>
-            )}
+            {" "}
+            <div className="flex items-center gap-2">
+              <img
+                src="/logo.png"
+                alt=""
+                className="w-12 rounded-full bg-white p-1"
+              />
+
+              {/* hide jika search */}
+              {!showSearch && (
+                <div>
+                  <h1 className="text-base lg:text-lg font-bold">
+                    Komisi Pemilihan Umum
+                  </h1>
+                  <p className="font-bold text-xs lg:text-base">
+                    Kabupaten Sekadau
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* SEARCH */}
@@ -139,7 +156,7 @@ const Berita = () => {
       </div>
 
       {/* CONTENT */}
-      <div className="p-4 pt-36 space-y-4">
+      <div className="p-4 pt-36 space-y-4 pb-28">
         {filteredBerita.length === 0 ? (
           <p className="text-gray-400 text-sm text-center">Tidak ada berita</p>
         ) : (
@@ -240,6 +257,7 @@ const Berita = () => {
           <ArrowUp size={20} />
         </button>
       )}
+      <BottomNav />
     </>
   );
 };
