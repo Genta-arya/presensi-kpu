@@ -291,7 +291,7 @@ const AbsenLayout = () => {
             {!isLoadingUser && (
               <div className="mt-4 pb-8">
                 <button
-                  disabled={coords.lat === null || coords.lng === null}
+                  disabled={coords.lat === null || coords.lng === null || isLoadingLocation}
                   type="button"
                   onClick={() => setShowConfirm(true)}
                   className="bg-red-600 w-full disabled:bg-gray-500 text-white py-2 rounded-md hover:bg-red-500 flex items-center justify-center gap-2"
