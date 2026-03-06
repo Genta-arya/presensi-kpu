@@ -39,7 +39,11 @@ const LoginPage = () => {
 
       if (res.data?.token) {
         localStorage.setItem("token", res.data.token);
-        navigate("/");
+        if (res.data.secretCode) {
+        window.location.href = "http://localhost:5173?secret=" + res.data.secretCode;
+        } else {
+          navigate("/");
+        }
       }
     } catch (err) {
       toast.error(
