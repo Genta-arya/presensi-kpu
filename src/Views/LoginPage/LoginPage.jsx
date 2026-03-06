@@ -95,7 +95,7 @@ const LoginPage = () => {
 
       localStorage.setItem("token", res.token);
       if (res.secretCode) {
-        window.location.href = `http://localhost:5173?secret=${res.secretCode}&issuer=E-Presensi`;
+        window.location.href = `http://localhost:5173/login?secret=${res.secretCode}&issuer=E-Presensi`;
       } else {
         navigate("/");
         toast.success("Login berhasil");
