@@ -93,10 +93,12 @@ const LoginPage = () => {
         return;
       }
 
-      localStorage.setItem("token", res.token);
+      
       if (res.secretCode) {
+          localStorage.removeItem("token");
         window.location.href = `http://localhost:5173/login?secret=${res.secretCode}&issuer=E-Presensi`;
       } else {
+        localStorage.setItem("token", res.token);
         navigate("/");
         toast.success("Login berhasil");
       }
