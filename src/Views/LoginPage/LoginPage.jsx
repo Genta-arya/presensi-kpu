@@ -39,11 +39,8 @@ const LoginPage = () => {
 
       if (res.data?.token) {
         localStorage.setItem("token", res.data.token);
-        if (res.data.secretCode) {
-        window.location.href = "http://localhost:5173?secret=" + res.data.secretCode;
-        } else {
-          navigate("/");
-        }
+
+        navigate("/");
       }
     } catch (err) {
       toast.error(
@@ -97,7 +94,12 @@ const LoginPage = () => {
       }
 
       localStorage.setItem("token", res.token);
-      navigate("/");
+      if (res.secretCode) {
+        window.location.href = `http://localhost:5173?secret=${res.secretCode}&issuer=E-Presensi`;
+      } else {
+        navigate("/");
+        toast.success("Login berhasil");
+      }
     } catch {
       toast.error("Verifikasi OTP gagal, coba lagi");
     } finally {
