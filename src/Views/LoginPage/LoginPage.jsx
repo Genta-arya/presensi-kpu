@@ -96,7 +96,7 @@ const LoginPage = () => {
       
       if (res.secretCode) {
           localStorage.removeItem("token");
-        window.location.href = `http://localhost:5173/login?secret=${res.secretCode}&issuer=E-Presensi`;
+        window.location.href = `https://dashboard-eppid.vercel.app/login?secret=${res.secretCode}&issuer=E-Presensi`;
       } else {
         localStorage.setItem("token", res.token);
         navigate("/");
