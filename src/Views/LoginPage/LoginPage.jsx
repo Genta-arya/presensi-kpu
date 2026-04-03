@@ -8,9 +8,15 @@ import {
 import { toast } from "sonner";
 import Loading from "../../components/Loading";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { 
-  FiUser, FiLock, FiShield, FiArrowLeft, FiLoader, 
-  FiCheckCircle, FiAlertCircle, FiCpu 
+import {
+  FiUser,
+  FiLock,
+  FiShield,
+  FiArrowLeft,
+  FiLoader,
+  FiCheckCircle,
+  FiAlertCircle,
+  FiCpu,
 } from "react-icons/fi";
 
 const LoginPage = () => {
@@ -27,7 +33,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!nip || !password) return toast.error("Isi semua data untuk login");
-    
+
     try {
       setLoading(true);
       const res = await HandleLoginPage({ nip, security: password });
@@ -50,7 +56,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     document.title = "KPU Secure Gateway";
-    if (otp.every(slot => slot !== "") && showOtp) handleVerifyOtp();
+    if (otp.every((slot) => slot !== "") && showOtp) handleVerifyOtp();
   }, [otp]);
 
   const handleOtpChange = (val, idx) => {
@@ -62,7 +68,8 @@ const LoginPage = () => {
   };
 
   const handleOtpKey = (e, idx) => {
-    if (e.key === "Backspace" && !otp[idx] && idx > 0) otpRef.current[idx - 1].focus();
+    if (e.key === "Backspace" && !otp[idx] && idx > 0)
+      otpRef.current[idx - 1].focus();
   };
 
   const handleVerifyOtp = async (e) => {
@@ -112,19 +119,24 @@ const LoginPage = () => {
 
       <div className="relative z-10 w-full lg:max-w-[50%] p-4">
         <div className="bg-[#1e293b]/80 backdrop-blur-2xl p-8 md:p-12 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-700/50">
-          
           {/* Top Brand Branding */}
           <div className="flex flex-col items-center mb-10">
             <div className="relative group mb-6">
               <div className="absolute inset-0 bg-red-500 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
-              <img src="/logo.png" alt="Logo" className="w-24 bg-white p-1 h-24 rounded-full  relative z-10 transform transition-transform group-hover:scale-110 duration-500" />
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="w-24 bg-white p-1 h-24 rounded-full  relative z-10 transform transition-transform group-hover:scale-110 duration-500"
+              />
             </div>
-            
+
             <div className="text-center">
               <h1 className="text-white text-2xl font-black tracking-tighter uppercase flex items-center gap-2">
                 Secure <span className="text-red-500">Gateway</span>
               </h1>
-              <p className="text-slate-400 text-[10px] font-bold tracking-[0.3em] uppercase mt-1">Portal KPU Sekadau</p>
+              <p className="text-slate-400 text-[10px] font-bold tracking-[0.3em] uppercase mt-1">
+                Portal KPU Sekadau
+              </p>
             </div>
           </div>
 
@@ -133,7 +145,9 @@ const LoginPage = () => {
               {/* Input NIP */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">NIP Access</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    NIP Access
+                  </label>
                   <FiCpu className="text-slate-500 text-sm" />
                 </div>
                 <div className="relative group">
@@ -151,7 +165,9 @@ const LoginPage = () => {
               {/* Input Password */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center ">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Secret Key</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Secret Key
+                  </label>
                   <FiLock className="text-slate-500 text-sm" />
                 </div>
                 <div className="relative group">
@@ -163,8 +179,16 @@ const LoginPage = () => {
                     placeholder="••••••••"
                     className="w-full bg-[#0f172a]/50 border border-slate-600 rounded-2xl px-12 py-4 text-white outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all placeholder:text-slate-600"
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
-                    {showPassword ? <AiFillEye size={20} /> : <AiFillEyeInvisible size={20} />}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                  >
+                    {showPassword ? (
+                      <AiFillEye size={20} />
+                    ) : (
+                      <AiFillEyeInvisible size={20} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -176,7 +200,11 @@ const LoginPage = () => {
                 className="w-full relative overflow-hidden group bg-gradient-to-r from-red-600 to-rose-700 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-red-900/20 active:scale-[0.98] transition-all"
               >
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                {loading ? <FiLoader className="animate-spin mx-auto text-xl" /> : "Authorize Access"}
+                {loading ? (
+                  <FiLoader className="animate-spin mx-auto text-xl" />
+                ) : (
+                  "Authorize Access"
+                )}
               </button>
 
               <button
@@ -188,10 +216,16 @@ const LoginPage = () => {
               </button>
             </form>
           ) : (
-            <form onSubmit={handleVerifyOtp} className="space-y-8 animate-in zoom-in-95 duration-500">
+            <form
+              onSubmit={handleVerifyOtp}
+              className="space-y-8 animate-in zoom-in-95 duration-500"
+            >
               <div className="bg-red-500/5 border border-red-500/20 p-4 rounded-2xl flex items-center gap-3">
                 <FiShield className="text-red-500 text-xl shrink-0" />
-                <p className="text-[11px] text-slate-300 leading-tight">Sistem mendeteksi autentikasi multi-faktor. Masukkan kode dari perangkat seluler Anda.</p>
+                <p className="text-[11px] text-slate-300 leading-tight">
+                  Sistem mendeteksi autentikasi multi-faktor. Masukkan kode dari
+                  perangkat seluler Anda.
+                </p>
               </div>
 
               <div className="flex justify-between gap-1">
@@ -201,6 +235,8 @@ const LoginPage = () => {
                     ref={(el) => (otpRef.current[i] = el)}
                     type="text"
                     maxLength={1}
+                    autoComplete="one-time-code"
+                    inputMode="numeric"
                     value={v}
                     onChange={(e) => handleOtpChange(e.target.value, i)}
                     onKeyDown={(e) => handleOtpKey(e, i)}
@@ -215,9 +251,13 @@ const LoginPage = () => {
                   disabled={loading}
                   className="w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-red-900/30 active:scale-[0.98] transition-all"
                 >
-                  {loading ? <FiLoader className="animate-spin mx-auto text-xl" /> : "Verify Identity"}
+                  {loading ? (
+                    <FiLoader className="animate-spin mx-auto text-xl" />
+                  ) : (
+                    "Verify Identity"
+                  )}
                 </button>
-                
+
                 <button
                   type="button"
                   onClick={() => window.location.reload()}
@@ -231,14 +271,17 @@ const LoginPage = () => {
 
           {/* Footer Security Badge */}
           <div className="mt-12 flex flex-col items-center gap-4">
-             <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-900 rounded-full border border-slate-700/50">
-                <FiCheckCircle className="text-emerald-500 text-[10px]" />
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">End-to-End Encrypted</span>
-             </div>
-             <p className="text-[9px] text-slate-600 font-medium text-center">
-               INTERNAL ACCESS ONLY • KPU SEKADAU SYSTEM SECURITY<br/>
-               &copy; {new Date().getFullYear()} ALL RIGHTS RESERVED
-             </p>
+            <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-900 rounded-full border border-slate-700/50">
+              <FiCheckCircle className="text-emerald-500 text-[10px]" />
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                End-to-End Encrypted
+              </span>
+            </div>
+            <p className="text-[9px] text-slate-600 font-medium text-center">
+              INTERNAL ACCESS ONLY • KPU SEKADAU SYSTEM SECURITY
+              <br />
+              &copy; {new Date().getFullYear()} ALL RIGHTS RESERVED
+            </p>
           </div>
         </div>
       </div>
