@@ -109,7 +109,28 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const data = e.clipboardData.getData("text").trim();
 
+    // Pastikan yang di-copas adalah angka dan panjangnya sesuai (6 digit)
+    if (!/^\d+$/.test(data)) return;
+
+    const pasteData = data.split("").slice(0, 6); // Ambil 6 karakter pertama
+    const newOtp = [...otp];
+
+    pasteData.forEach((char, index) => {
+      if (index < 6) {
+        newOtp[index] = char;
+      }
+    });
+
+    setOtp(newOtp);
+
+    // Pindahkan fokus ke input terakhir atau input setelah data yang terisi
+    const lastIndex = Math.min(pasteData.length - 1, 5);
+    otpRef.current[lastIndex].focus();
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0f172a] relative overflow-hidden font-sans">
       {/* Cinematic Background Elements */}
@@ -239,6 +260,7 @@ const LoginPage = () => {
                     inputMode="numeric"
                     value={v}
                     onChange={(e) => handleOtpChange(e.target.value, i)}
+                    onPaste={handlePaste}
                     onKeyDown={(e) => handleOtpKey(e, i)}
                     className="w-full h-16 text-center bg-[#0f172a] border-2 border-slate-700 rounded-xl text-2xl font-black text-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all"
                   />
