@@ -126,7 +126,7 @@ const LoginPage = () => {
               <img
                 src="/logo.png"
                 alt="Logo"
-                className="w-24 bg-white p-1 h-24 rounded-full  relative z-10 transform transition-transform group-hover:scale-110 duration-500"
+                className="w-24 bg-white p-1 h-24 rounded-2xl relative z-10 transform transition-transform group-hover:scale-110 duration-500"
               />
             </div>
 
