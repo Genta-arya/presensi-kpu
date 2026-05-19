@@ -11,6 +11,7 @@ import ProtectedRoute from "./State/ProtectedRoute";
 import LaporanKegiatan from "./Views/LaporanKegiatan/LaporanKegiatan";
 import DetailLaporan from "./Views/LaporanKegiatan/DetailLaporan";
 import Berita from "./Views/Berita/Berita";
+import AbsenPulang from "./Views/AbsenPulang";
 
 const AppRoutes = () => {
   return (
@@ -59,8 +60,8 @@ const AppRoutes = () => {
                   element={<ProtectedRoute element={<ComingSoon />} />}
                 />
                 <Route
-                  path="/data/absen-pulang"
-                  element={<ProtectedRoute element={<ComingSoon />} />}
+                  path="/data/absen-pulang/:id"
+                  element={<ProtectedRoute element={<AbsenPulang />} />}
                 />
                 <Route
                   path="/data/rekap-absensi"

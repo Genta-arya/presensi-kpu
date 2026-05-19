@@ -162,7 +162,35 @@ const MainMenu = () => {
             ))}
           </Swiper>
         </motion.div>
+        <motion.div
+          variants={fadeVariant}
+          initial="hidden"
+          animate="show"
+          className="mt-6 px-3"
+        >
+        
 
+          <div className="grid grid-cols-3 gap-3">
+            <MenuCard
+              onClick={() => navigate(`/absensi/` + user.id)}
+              icon={CalendarCheck}
+              color="text-blue-600"
+              label="Masuk"
+            />
+            <MenuCard
+              onClick={() => navigate("/data/absen-pulang")}
+              icon={LogOut}
+              color="text-red-600"
+              label="Pulang"
+            />
+            <MenuCard
+              onClick={() => navigate("/data/rekap-absensi")}
+              icon={FileText}
+              color="text-green-600"
+              label="Presensi Saya"
+            />
+          </div>
+        </motion.div>
         {/* MENU */}
         <motion.div
           variants={fadeVariant}
@@ -177,17 +205,10 @@ const MainMenu = () => {
 
           <div className="grid grid-cols-3 gap-3">
             <MenuCard
-              onClick={() => navigate(`/absensi/${user?.id}`)}
-              icon={ClipboardCheck}
-              color="text-indigo-600"
-              label="Presensi"
-            />
-
-            <MenuCard
               onClick={() => navigate("/presensi-kegiatan")}
               icon={Users}
               color="text-orange-600"
-              label="Kegiatan"
+              label="Presensi Kegiatan"
             />
 
             <MenuCard
@@ -208,7 +229,13 @@ const MainMenu = () => {
               onClick={() => toast.info("Fitur ini segera hadir")}
               icon={BarChart3}
               color="text-purple-600"
-              label="SKP"
+              label="Kenaikan Gaji Berkala"
+            />
+            <MenuCard
+              onClick={() => toast.info("Fitur ini segera hadir")}
+              icon={FilePlus}
+              color="text-purple-600"
+              label="Pengajuan Cuti"
             />
             <MenuCard
               onClick={() =>
@@ -222,41 +249,6 @@ const MainMenu = () => {
         </motion.div>
 
         {/* DATA ABSENSI */}
-        <motion.div
-          variants={fadeVariant}
-          initial="hidden"
-          animate="show"
-          className="mt-6 px-3"
-        >
-          <div className="flex gap-2 items-center mb-3">
-            <FaDatabase />
-
-            <h2 className="text-sm font-bold text-gray-700 ">
-              Data Absensi
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <MenuCard
-              onClick={() => navigate("/data/absen-masuk")}
-              icon={CalendarCheck}
-              color="text-blue-600"
-              label="Masuk"
-            />
-            <MenuCard
-              onClick={() => navigate("/data/absen-pulang")}
-              icon={LogOut}
-              color="text-red-600"
-              label="Pulang"
-            />
-            <MenuCard
-              onClick={() => navigate("/data/rekap-absensi")}
-              icon={FileText}
-              color="text-green-600"
-              label="Rekap"
-            />
-          </div>
-        </motion.div>
       </div>
 
       {/* MODAL FULL INFO */}
