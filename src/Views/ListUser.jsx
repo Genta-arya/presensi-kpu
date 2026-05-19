@@ -171,7 +171,7 @@ const ListUser = () => {
               <motion.div
                 key={user.id}
                 onClick={() => {
-                  setSelectedUser(user);
+                 
                   // jika role user adalah admin, arahkan ke halaman absensi dengan user id
                   {
                     user.role === "admin"
