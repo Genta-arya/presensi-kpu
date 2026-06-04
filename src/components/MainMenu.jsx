@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  CalendarCheck,
-  LogOut,
   FileText,
   Users,
   ClipboardList,
@@ -10,7 +8,6 @@ import {
   X,
   UserSquare2,
   BarChart3,
-  ClipboardCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -24,11 +21,10 @@ import useCheckLogin from "../State/useLogin";
 import Loading from "./Loading";
 import BottomNav from "./BottomNav";
 import Headers from "./Headers";
-import { FaBell, FaDatabase, FaTag } from "react-icons/fa";
-import { FaMapPin } from "react-icons/fa6";
+import { FaBell, FaMapPin } from "react-icons/fa";
 import { toast } from "sonner";
-import { GrDashboard } from "react-icons/gr";
 import { MdDashboard } from "react-icons/md";
+import DateTimeWeather from "./Weather";
 
 /* SIMPLE FADE */
 const fadeVariant = {
@@ -43,36 +39,36 @@ const fadeVariant = {
   },
 };
 
-/* MENU CARD */
-const MenuCard = ({ onClick, icon: Icon, color, label }) => (
+/* MENU CARD WITH DYNAMIC GRID SPANNING */
+const MenuCard = ({ onClick, icon: Icon, color, label, isFullWidth }) => (
   <motion.div
     variants={fadeVariant}
     initial="hidden"
     animate="show"
-    whileHover={{ scale: 1.03 }}
-    whileTap={{ scale: 0.94 }}
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.96 }}
     onClick={onClick}
-    className="
+    className={`
       group flex flex-col items-center justify-center
-      bg-white rounded-xl p-4
-      shadow cursor-pointer
-      transition-all
-      hover:-translate-y-1 hover:shadow-lg
-      h-[90px]
-    "
+      bg-white rounded-2xl p-4 border-2 border-red-500
+      shadow-sm cursor-pointer transition-all duration-200
+      h-[95px] text-center
+      ${isFullWidth ? "col-span-3 flex-row gap-4 px-6 justify-start" : ""}
+    `}
   >
-    <Icon className={`${color}`} size={26} />
+    <div className={`p-2 rounded-xl bg-gray-50/50 group-hover:scale-105 transition-transform duration-300 shrink-0`}>
+      <Icon className={`${color}`} size={24} />
+    </div>
 
-    {/* TEXT AREA FIX HEIGHT */}
-    <div className="mt-2 h-[28px] flex items-center">
-      <p className="text-xs font-semibold text-gray-700 text-center leading-tight">
+    <div className={`flex items-center mb-4 ${isFullWidth ? "text-left flex-1" : "mt-2 h-[28px] text-center"}`}>
+      <p className="text-xs font-bold text-gray-700 leading-tight">
         {label}
       </p>
     </div>
   </motion.div>
 );
 
-/* INFO CARD (SLIDER) */
+/* MODERNIZED SWIPER INFO CARD */
 const InfoCard = ({ date, title, content, onClick }) => (
   <motion.div
     onClick={onClick}
@@ -80,51 +76,81 @@ const InfoCard = ({ date, title, content, onClick }) => (
     initial="hidden"
     animate="show"
     className="
-      bg-white rounded-xl p-4 shadow
-      h-[130px] flex flex-col
-      cursor-pointer
+      bg-white rounded-2xl p-5 border border-gray-100
+      shadow-[0_6px_20px_-6px_rgba(0,0,0,0.05)]
+      h-[140px] flex flex-col relative overflow-hidden
+      cursor-pointer group transition-all duration-300 hover:shadow-md
     "
   >
-    <p className="text-[11px] text-gray-400 mb-1">{date}</p>
-    <h3 className="text-sm font-bold text-gray-700 mb-1">{title}</h3>
-    <p className="text-xs text-gray-600 leading-relaxed line-clamp-3">
+    <div className="absolute top-0 left-0 w-1.5 h-full bg-red-600 rounded-l-2xl" />
+    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1">
+      {date}
+    </p>
+    <h3 className="text-sm font-extrabold text-gray-800 mb-1 px-1 group-hover:text-red-600 transition-colors line-clamp-1">
+      {title}
+    </h3>
+    <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 px-1 pr-2">
       {content}
     </p>
-    <span className="text-[11px] text-indigo-600 mt-auto">
-      Lihat selengkapnya →
+    <span className="text-[11px] font-bold text-red-600 mt-auto px-1 flex items-center gap-1">
+      Baca Selengkapnya <span className="transform group-hover:translate-x-1 transition-transform">→</span>
     </span>
   </motion.div>
 );
 
 const MainMenu = () => {
-  const { isLoading, checkSession, user } = useCheckLogin();
+  const { isLoading, checkSession } = useCheckLogin();
   const navigate = useNavigate();
   const [activeInfo, setActiveInfo] = useState(null);
+  const [showIframeModal, setShowIframeModal] = useState(false);
 
   const infoData = [
     {
-      date: "5 Feb 2026",
-      title: "Update Sistem Absensi",
-      content:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua., Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. , Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ,, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ,, Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      date: "21 Mei 2026",
+      title: "Rapat Pleno Rutin Mingguan",
+      content: "Diberitahukan kepada seluruh komisioner dan staf sekretariat KPU Kabupaten Sekadau untuk dapat menghadiri rapat pleno rutin internal yang akan membahas persiapan logistik pemilu susulan. Rapat akan dilaksanakan di Ruang Pertemuan Utama pada pukul 09:00 WIB.",
     },
     {
-      date: "3 Feb 2026",
-      title: "Pengumuman Libur Nasional",
-      content:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+      date: "19 Mei 2026",
+      title: "Bimtek Pemutakhiran Data Pemilih",
+      content: "Pelaksanaan Bimbingan Teknis (Bimtek) bagi PPK dan PPS se-Kabupaten Sekadau mengenai penggunaan sistem informasi pemutakhiran data pemilih terbaru. Diharapkan staf subbagian data memonitor kelancaran jaringan selama kegiatan berlangsung.",
     },
     {
-      date: "1 Feb 2026",
-      title: "Perubahan Jam Kerja",
-      content:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+      date: "15 Mei 2026",
+      title: "Pengingat Laporan Harian Tugas",
+      content: "Mengingat pentingnya akuntabilitas kinerja administrasi, seluruh pegawai honorer maupun ASN di lingkungan KPU Sekadau diwajibkan untuk mengisi dan merampungkan draf laporan harian tugas (e-Kinerja) sebelum pukul 16:00 WIB setiap harinya.",
     },
+    {
+      date: "10 Mei 2026",
+      title: "Pembereliharaan Server Internal SPSE",
+      content: "Akan dilakukan pemeliharaan rutin jaringan dan pembaruan sistem keamanan server pada Layanan Pengadaan Secara Elektronik (SPSE) internal KPU. Akses sistem kemungkinan akan mengalami gangguan sementara pada hari Sabtu mulai pukul 23:00 WIB.",
+    },
+  ];
+
+  const menuList = [
+    { path: "/data/rekap-absensi", icon: FileText, color: "text-green-600", label: "Presensi Saya" },
+    { path: "/presensi-kegiatan", icon: Users, color: "text-orange-600", label: "Presensi Kegiatan" },
+    { path: "/laporan-harian", icon: FileText, color: "text-teal-600", label: "Laporan Harian" },
+    { path: "/pegawai", icon: UserSquare2, color: "text-blue-600", label: "Daftar Pegawai" },
+    { type: "toast", icon: BarChart3, color: "text-purple-600", label: "Kenaikan Gaji Berkala" },
+    { type: "toast", icon: FilePlus, color: "text-fuchsia-600", label: "Pengajuan Cuti" },
+    { type: "iframe", icon: ClipboardList, color: "text-red-600", label: "Informasi Pelayanan" },
   ];
 
   useEffect(() => {
     checkSession();
   }, []);
+
+  useEffect(() => {
+    if (activeInfo || showIframeModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [activeInfo, showIframeModal]);
 
   if (isLoading) return <Loading />;
 
@@ -132,8 +158,10 @@ const MainMenu = () => {
     <Container>
       <Headers />
 
-      {/* INFORMASI */}
+      <DateTimeWeather />
+
       <div className="px-2">
+        {/* SECTION PEMBERITAHUAN */}
         <motion.div
           variants={fadeVariant}
           initial="hidden"
@@ -141,7 +169,7 @@ const MainMenu = () => {
           className="mt-6 px-3"
         >
           <div className="flex gap-2 items-center mb-3">
-            <FaBell />
+            <FaBell className="text-red-600" />
             <h2 className="text-sm font-bold text-gray-700 ">
               Pemberitahuan ({infoData.length})
             </h2>
@@ -150,10 +178,10 @@ const MainMenu = () => {
           <Swiper
             modules={[Pagination, Autoplay]}
             pagination={{ clickable: true }}
-            autoplay={{ delay: 4000 }}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
             spaceBetween={12}
             slidesPerView={1}
-            className="pb-6"
+            className="pb-7 custom-swiper"
           >
             {infoData.map((item, i) => (
               <SwiperSlide key={i}>
@@ -162,36 +190,8 @@ const MainMenu = () => {
             ))}
           </Swiper>
         </motion.div>
-        <motion.div
-          variants={fadeVariant}
-          initial="hidden"
-          animate="show"
-          className="mt-6 px-3"
-        >
-        
 
-          <div className="grid grid-cols-3 gap-3">
-            <MenuCard
-              onClick={() => navigate(`/absensi/` + user.id)}
-              icon={CalendarCheck}
-              color="text-blue-600"
-              label="Masuk"
-            />
-            <MenuCard
-              onClick={() => navigate("/data/absen-pulang")}
-              icon={LogOut}
-              color="text-red-600"
-              label="Pulang"
-            />
-            <MenuCard
-              onClick={() => navigate("/data/rekap-absensi")}
-              icon={FileText}
-              color="text-green-600"
-              label="Presensi Saya"
-            />
-          </div>
-        </motion.div>
-        {/* MENU */}
+        {/* SECTION MENU DENGAN DETEKSI DATA TERAKHIR */}
         <motion.div
           variants={fadeVariant}
           initial="hidden"
@@ -199,56 +199,54 @@ const MainMenu = () => {
           className="mt-8 px-3"
         >
           <div className="flex gap-2 items-center mb-3">
-            <MdDashboard size={18} />
+            <MdDashboard size={18} className="text-gray-500" />
             <h2 className="text-sm font-bold text-gray-700 ">Menu</h2>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            <MenuCard
-              onClick={() => navigate("/presensi-kegiatan")}
-              icon={Users}
-              color="text-orange-600"
-              label="Presensi Kegiatan"
-            />
+            {menuList.map((menu, index) => {
+              const isLastItem = index === menuList.length - 1;
+              const isOddTotal = menuList.length % 3 !== 0; 
+              const shouldBeFullWidth = isLastItem && isOddTotal;
 
-            <MenuCard
-              onClick={() => navigate("/laporan-harian")}
-              icon={FileText}
-              color="text-teal-600"
-              label="Laporan Harian"
-            />
+              const handleMenuClick = () => {
+                if (menu.type === "toast") {
+                  toast.info("Fitur ini segera hadir");
+                } else if (menu.type === "iframe") {
+                  setShowIframeModal(true);
+                } else {
+                  navigate(menu.path);
+                }
+              };
 
-            <MenuCard
-              onClick={() => navigate("/pegawai")}
-              icon={UserSquare2}
-              color="text-blue-600"
-              label="Daftar Pegawai"
-            />
-
-            <MenuCard
-              onClick={() => toast.info("Fitur ini segera hadir")}
-              icon={BarChart3}
-              color="text-purple-600"
-              label="Kenaikan Gaji Berkala"
-            />
-            <MenuCard
-              onClick={() => toast.info("Fitur ini segera hadir")}
-              icon={FilePlus}
-              color="text-purple-600"
-              label="Pengajuan Cuti"
-            />
-            <MenuCard
-              onClick={() =>
-                window.open("https://informasi.kpu-sekadau.my.id/", "_blank")
-              }
-              icon={ClipboardList}
-              color="text-purple-600"
-              label="Informasi Pelayanan"
-            />
+              return (
+                <MenuCard
+                  key={index}
+                  onClick={handleMenuClick}
+                  icon={menu.icon}
+                  color={menu.color}
+                  label={menu.label}
+                  isFullWidth={shouldBeFullWidth}
+                />
+              );
+            })}
           </div>
         </motion.div>
 
-        {/* DATA ABSENSI */}
+        {/* INFO VERSI APLIKASI MINIMALIS */}
+        <div className="mt-12 mb-6 flex flex-col items-center justify-center text-center space-y-1">
+          <p className="text-[9px] font-black tracking-widest text-gray-400 uppercase">
+            Sistem Informasi Kepegawaian
+          </p>
+             <p className="text-[8px] font-black tracking-widest text-gray-400 uppercase">
+            KPU Kabupaten Sekadau
+          </p>
+          <div className="inline-flex mt-2 items-center bg-gray-100 border border-gray-200/60 px-2 py-0.5 rounded-full shadow-inner">
+            <span className="text-[9px]  font-black tracking-wider text-gray-500 font-mono">
+              v1.0
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* MODAL FULL INFO */}
@@ -267,39 +265,55 @@ const MainMenu = () => {
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25 }}
               onClick={(e) => e.stopPropagation()}
-              className="
-          bg-white w-full
-          rounded-t-2xl
-          h-[50vh]
-          mt-auto
-          flex flex-col
-        "
+              className="bg-white w-full rounded-t-2xl h-[50vh] mt-auto flex flex-col"
             >
-              {/* HANDLE */}
               <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto my-3" />
-
-              {/* HEADER */}
-              <div className="flex justify-between  items-center px-5 mt-8">
+              <div className="flex justify-between items-center px-5 mt-8">
                 <div className="flex gap-2 items-center">
                   <FaMapPin />
-                  <h3 className="font-bold text-gray-700">
-                    {activeInfo.title}
-                  </h3>
+                  <h3 className="font-bold text-gray-700">{activeInfo.title}</h3>
                 </div>
-                <X
-                  className="text-gray-500 cursor-pointer"
-                  onClick={() => setActiveInfo(null)}
-                />
+                <X className="text-gray-500 cursor-pointer" onClick={() => setActiveInfo(null)} />
               </div>
-
-              <p className="text-xs text-gray-400 border-b-2 px-5 mt-1 pb-4">
-                {activeInfo.date}
-              </p>
-
+              <p className="text-xs text-gray-400 border-b-2 px-5 mt-1 pb-4">{activeInfo.date}</p>
               <div className="px-5 py-4 overflow-y-auto flex-1 pb-8 text-justify">
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {activeInfo.content}
-                </p>
+                <p className="text-sm text-gray-600 leading-relaxed">{activeInfo.content}</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL BOTTOM SHEET IFRAME INFORMASI PELAYANAN */}
+      <AnimatePresence>
+        {showIframeModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/50 flex"
+            onClick={() => setShowIframeModal(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white w-full rounded-t-[28px] h-[85vh] mt-auto flex flex-col overflow-hidden shadow-2xl"
+            >
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto my-3" />
+              <div className="flex justify-between items-center px-5 py-2 border-b border-gray-100">
+                <div>
+                  <h3 className="font-black text-gray-800 text-lg">Informasi Pelayanan</h3>
+                  <p className="text-xs text-gray-500">KPU Kabupaten Sekadau</p>
+                </div>
+                <button onClick={() => setShowIframeModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <X className="text-gray-500" size={20} />
+                </button>
+              </div>
+              <div className="flex-1 bg-gray-50 relative">
+                <iframe src="https://informasi.kpu-sekadau.my.id/" title="Informasi Pelayanan KPU Sekadau" className="w-full h-full border-0" allow="geolocation" />
               </div>
             </motion.div>
           </motion.div>
@@ -307,6 +321,11 @@ const MainMenu = () => {
       </AnimatePresence>
 
       <BottomNav />
+
+      <style>{`
+        .custom-swiper .swiper-pagination-bullet { background: #e5e7eb !important; opacity: 1 !important; width: 6px; height: 6px; transition: all 0.3s ease; }
+        .custom-swiper .swiper-pagination-bullet-active { background: #dc2626 !important; width: 16px; border-radius: 4px; }
+      `}</style>
     </Container>
   );
 };

@@ -6,7 +6,7 @@ const ComingSoon = () => {
   return (
     <>
       <Navigations title="Kembali" />
-      <div className=" flex flex-col justify-center items-center bg-white px-4">
+      <div className=" flex flex-col justify-center items-center bg-white px-4 pb-8">
         <div className="mt-32">
           <Lottie animationData={comingsoon} loop={true} />
         </div>

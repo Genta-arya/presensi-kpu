@@ -87,8 +87,13 @@ const LoginPage = () => {
         window.location.href = `https://dashboard-eppid.vercel.app/login?secret=${res.secretCode}&issuer=E-Presensi`;
       } else {
         localStorage.setItem("token", res.token);
-        navigate("/");
-        toast.success("Akses Diberikan");
+        if (res.role === "USER") {
+          navigate("/");
+          toast.success("login berhasil");
+        } else if (res.role !== "USER") {
+          navigate("/dashboard");
+          toast.success("login berhasil");
+        }
       }
     } catch {
       toast.error("Kode Keamanan Tidak Valid");

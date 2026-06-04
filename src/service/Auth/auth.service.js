@@ -10,7 +10,16 @@ export const HandleLogin = async (data) => {
     throw error;
   }
 };
-
+export const resetPassword = async (data) => {
+  try {
+    const response = await axiosInstance.post("/auth/reset-password", {
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
 export const HandleLoginPage = async (data) => {
   try {
     const response = await axiosInstance.post("/auth/login", { ...data });
@@ -68,6 +77,15 @@ export const ResetMFA = async (userId) => {
       nip: userId.nip,
       password: userId.password,
     });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const UpdateSingleUser = async (id, data) => {
+  try {
+    const response = await axiosInstance.post(`/auth/update-user/${id}`, data);
     return response.data;
   } catch (error) {
     throw error;

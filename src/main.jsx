@@ -4,7 +4,7 @@ import "./index.css";
 import App from "./App.jsx";
 import { Toaster } from "sonner";
 import { UserProvider } from "./State/useContext.jsx";
-
+import "react-calendar/dist/Calendar.css";
 createRoot(document.getElementById("root")).render(
   <>
     <App />
