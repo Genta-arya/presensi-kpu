@@ -86,3 +86,8 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(25px);
 }
+
+
+.custom-calendar .react-calendar__tile * {
+  pointer-events: none !important;
+}

@@ -20,6 +20,7 @@ import {
 } from "../../../service/Subbagian/Subbagian.services";
 import Loading from "../../../components/Loading";
 import ContainerDashboard from "../components/ContainerDashboard";
+import { Helmet } from "react-helmet-async";
 
 const LayoutUnitKerja = () => {
   const navigate = useNavigate();
@@ -102,15 +103,16 @@ const LayoutUnitKerja = () => {
 
   return (
     <ContainerDashboard>
+      <Helmet>
+            <title>Manajemen Subbagian - Sistem Informasi Kepegawaian KPU Kabupaten Sekadau </title>
+         </Helmet>
       <div className="space-y-6 w-full p-1">
         {/* HEADER SECTION */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-6 rounded-3xl border border-gray-100 shadow-sm gap-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-red-50 text-red-600 rounded-2xl shrink-0">
-              <Building2 size={24} />
-            </div>
+          
             <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-800">Subbagian</h1>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-800">Manajemen Subbagian</h1>
               <p className="text-xs sm:text-sm text-slate-500">
                 Manajemen data struktur subbagian KPU Kabupaten Sekadau
               </p>

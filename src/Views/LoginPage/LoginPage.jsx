@@ -136,6 +136,10 @@ const LoginPage = () => {
     const lastIndex = Math.min(pasteData.length - 1, 5);
     otpRef.current[lastIndex].focus();
   };
+
+  useEffect(() => {
+    if (localStorage.getItem("token")) navigate("/");
+  }, []);
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0f172a] relative overflow-hidden font-sans">
       {/* Cinematic Background Elements */}

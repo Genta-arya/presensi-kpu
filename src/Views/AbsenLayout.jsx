@@ -60,10 +60,12 @@ const AbsenLayout = () => {
         // Logika Pemanis: Membuat koordinat acak yang sangat dekat dengan kantor (jarak < 60 meter)
         const randomSignLat = Math.random() < 0.5 ? -1 : 1;
         const randomSignLng = Math.random() < 0.5 ? -1 : 1;
-        
+
         // Menambahkan variasi acak sekitar 0.0001 hingga 0.0005 derajat
-        const fakeLat = targetCoords.lat + randomSignLat * (0.0001 + Math.random() * 0.0004);
-        const fakeLng = targetCoords.lng + randomSignLng * (0.0001 + Math.random() * 0.0004);
+        const fakeLat =
+          targetCoords.lat + randomSignLat * (0.0001 + Math.random() * 0.0004);
+        const fakeLng =
+          targetCoords.lng + randomSignLng * (0.0001 + Math.random() * 0.0004);
 
         setCoords({ lat: fakeLat, lng: fakeLng });
 
@@ -71,15 +73,18 @@ const AbsenLayout = () => {
           fakeLat,
           fakeLng,
           targetCoords.lat,
-          targetCoords.lng
+          targetCoords.lng,
         );
         setDistance(jarak);
         setIsLoadingLocation(false);
       },
       (error) => {
         // Jika GPS mati atau izin ditolak, tetap berikan lokasi palsu terdekat agar aplikasi tidak macet
-        console.warn("Gagal ambil lokasi asli, menggunakan lokasi default pemanis:", error);
-        
+        console.warn(
+          "Gagal ambil lokasi asli, menggunakan lokasi default pemanis:",
+          error,
+        );
+
         const randomSignLat = Math.random() < 0.5 ? -1 : 1;
         const randomSignLng = Math.random() < 0.5 ? -1 : 1;
         const fakeLat = targetCoords.lat + randomSignLat * 0.0002;
@@ -91,11 +96,11 @@ const AbsenLayout = () => {
           fakeLat,
           fakeLng,
           targetCoords.lat,
-          targetCoords.lng
+          targetCoords.lng,
         );
         setDistance(jarak);
         setIsLoadingLocation(false);
-      }
+      },
     );
   };
 
@@ -122,6 +127,7 @@ const AbsenLayout = () => {
     try {
       const response = await SingleUsers(id);
       const tanggal = response?.data?.tanggal_sekarang || "";
+      const sudahAbsen = response?.data?.sudah_absen || false;
 
       if (tanggal) {
         const hari = new Date(tanggal);
@@ -135,6 +141,10 @@ const AbsenLayout = () => {
         setDateNow(formatter.format(hari));
       } else {
         setDateNow("Tanggal tidak tersedia");
+      }
+
+      if (sudahAbsen) {
+        setIsAbsen(true);
       }
 
       setData(response?.data || []);
@@ -177,7 +187,7 @@ const AbsenLayout = () => {
 
       setShowSuccessModal(true);
     } catch (error) {
-      toast.error("Gagal melakukan absensi. Silakan coba lagi.");
+      toast.error(error.response?.data?.message || "Gagal menyimpan data");
     } finally {
       setLoading(false);
     }
@@ -230,165 +240,178 @@ const AbsenLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white ">
-      {isLoadingLocation ? (
-        <LoadingLokasi />
-      ) : (
-        <>
-          {coords.lat === null || coords.lng === null ? (
-            <LokasiCheck getCurrentLocation={getCurrentLocation} />
-          ) : (
-            <Maps
-              coords={coords}
-              setDistance={setDistance}
-              distance={distance}
-              showPinModal={showPinModal}
-              isLoadingUser={isLoadingUser}
-              targetCoords={targetCoords}
-              getCurrentLocation={getCurrentLocation}
-              setCoords={setCoords}
-              setIsLoadingLocation={setIsLoadingLocation}
-            />
-          )}
-        </>
-      )}
-
-      <div className="mx-auto rounded-t-lg  bg-white px-5 pt-8 space-y-6">
-        <div className="text-gray-700 font-bold text-sm border-b pb-2 mb-4 flex items-center gap-2">
-          {isLoadingUser ? (
-            <>
-              <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
-              <div className="w-32 h-4 bg-gray-200 animate-pulse rounded" />
-            </>
-          ) : (
-            <>
-              <img src={data?.avatar} alt="" className="w-10 rounded-full" />
-              {data?.name || "Pengguna Tidak Ditemukan"}
-            </>
-          )}
-        </div>
-
-        <div className="text-gray-700 text-sm border-b pb-2 mb-4 flex items-center gap-2">
-          {isLoadingUser ? (
-            <>
-              <div className="w-5 h-5 rounded-md bg-gray-200 animate-pulse" />
-              <div className="w-40 h-4 bg-gray-200 animate-pulse rounded" />
-            </>
-          ) : (
-            <>
-              <FaCalendar className="text-xl text-gray-500" />
-              <p className="font-bold">{dateNow}</p>
-            </>
-          )}
-        </div>
-        {!isLoadingUser && (
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tanda Tangan:
-              </label>
-              <button
-                type="button"
-                onClick={handleClear}
-                className="text-sm bg-gray-200 px-3 py-1 rounded hover:bg-gray-300"
-              >
-                <FaSync className="inline mr-1" />
-              </button>
-            </div>
-
-            <div className="border border-gray-300 rounded-md">
-              <SignatureCanvas
-                ref={sigCanvas}
-                penColor="black"
-                canvasProps={{ className: "w-full h-52 rounded-md" }}
-                onEnd={() => {
-                  const ttd = sigCanvas.current
-                    .getCanvas()
-                    .toDataURL("image/png");
-                  localStorage.setItem("ttd_cache", ttd);
-                }}
-              />
-            </div>
-
-            {!isLoadingUser && (
-              <div className="mt-4 pb-8">
-                <button
-                  disabled={coords.lat === null || coords.lng === null || isLoadingLocation}
-                  type="button"
-                  onClick={() => setShowConfirm(true)}
-                  className="bg-red-600 w-full disabled:bg-gray-500 text-white py-2 rounded-md hover:bg-red-500 flex items-center justify-center gap-2"
-                >
-                  <FaCheck size={20} />
-                  Konfirmasi Absen
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    localStorage.removeItem("ttd_cache");
-                    navigate("/");
-                  }}
-                  className="w-full text-xs mt-3 hover:opacity-75 border border-gray-400 text-black px-4 py-3 rounded"
-                >
-                  Kembali
-                </button>
-              </div>
+    <>
+      {
+        (!isAbsen && (
+          <div className="min-h-screen bg-white ">
+            {isLoadingLocation ? (
+              <LoadingLokasi />
+            ) : (
+              <>
+                {coords.lat === null || coords.lng === null ? (
+                  <LokasiCheck getCurrentLocation={getCurrentLocation} />
+                ) : (
+                  <Maps
+                    coords={coords}
+                    setDistance={setDistance}
+                    distance={distance}
+                    showPinModal={showPinModal}
+                    isLoadingUser={isLoadingUser}
+                    targetCoords={targetCoords}
+                    getCurrentLocation={getCurrentLocation}
+                    setCoords={setCoords}
+                    setIsLoadingLocation={setIsLoadingLocation}
+                  />
+                )}
+              </>
             )}
-          </div>
-        )}
-      </div>
 
-      {/* Bottom Sheet */}
-      <AnimatePresence>
-        {showConfirm && (
-          <KonfirmasiAbsensi
-            setShowPinModal={setShowPinModal}
-            handleSave={handleSave}
-            setShowConfirm={setShowConfirm}
-            swipeHandlers={swipeHandlers}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showSuccessModal && (
-          <motion.div
-            className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-white rounded-xl p-6 w-11/12 max-w-sm text-center"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-            >
-              <div className="flex justify-center">
-                <div className="w-48 h-48">
-                  <Lottie animationData={successAnimation} loop={false} />
-                </div>
+            <div className="mx-auto rounded-t-lg  bg-white px-5 pt-8 space-y-6">
+              <div className="text-gray-700 font-bold text-sm border-b pb-2 mb-4 flex items-center gap-2">
+                {isLoadingUser ? (
+                  <>
+                    <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+                    <div className="w-32 h-4 bg-gray-200 animate-pulse rounded" />
+                  </>
+                ) : (
+                  <>
+                    <img
+                      src={data?.avatar}
+                      alt=""
+                      className="w-10 rounded-full"
+                    />
+                    {data?.name || "Pengguna Tidak Ditemukan"}
+                  </>
+                )}
               </div>
-              <h2 className="text-xl font-semibold mb-2 text-green-600">
-                Absensi Berhasil!
-              </h2>
-              <p className="text-gray-600 mb-4">
-                Kamu telah melakukan absensi hari ini 🎉
-              </p>
-              <button
-                onClick={() => {
-                  navigate("/");
-                  localStorage.removeItem("ttd_cache");
-                }}
-                className="bg-green-500 w-full text-white px-4 py-2 rounded-full hover:bg-green-600"
-              >
-                Tutup
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+
+              <div className="text-gray-700 text-sm border-b pb-2 mb-4 flex items-center gap-2">
+                {isLoadingUser ? (
+                  <>
+                    <div className="w-5 h-5 rounded-md bg-gray-200 animate-pulse" />
+                    <div className="w-40 h-4 bg-gray-200 animate-pulse rounded" />
+                  </>
+                ) : (
+                  <>
+                    <FaCalendar className="text-xl text-gray-500" />
+                    <p className="font-bold">{dateNow}</p>
+                  </>
+                )}
+              </div>
+              {!isLoadingUser && (
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tanda Tangan:
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleClear}
+                      className="text-sm bg-gray-200 px-3 py-1 rounded hover:bg-gray-300"
+                    >
+                      <FaSync className="inline mr-1" />
+                    </button>
+                  </div>
+
+                  <div className="border border-gray-300 rounded-md">
+                    <SignatureCanvas
+                      ref={sigCanvas}
+                      penColor="red"
+                      canvasProps={{ className: "w-full h-52 rounded-md" }}
+                      onEnd={() => {
+                        const ttd = sigCanvas.current
+                          .getCanvas()
+                          .toDataURL("image/png");
+                        localStorage.setItem("ttd_cache", ttd);
+                      }}
+                    />
+                  </div>
+
+                  {!isLoadingUser && (
+                    <div className="mt-4 pb-8">
+                      <button
+                        disabled={
+                          coords.lat === null ||
+                          coords.lng === null ||
+                          isLoadingLocation
+                        }
+                        type="button"
+                        onClick={() => setShowConfirm(true)}
+                        className="bg-red-600 w-full disabled:bg-gray-500 text-white py-2 rounded-md hover:bg-red-500 flex items-center justify-center gap-2"
+                      >
+                        <FaCheck size={20} />
+                        Konfirmasi Absen
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          localStorage.removeItem("ttd_cache");
+                          navigate("/");
+                        }}
+                        className="w-full text-xs mt-3 hover:opacity-75 border border-gray-400 text-black px-4 py-3 rounded"
+                      >
+                        Kembali
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Sheet */}
+            <AnimatePresence>
+              {showConfirm && (
+                <KonfirmasiAbsensi
+                  setShowPinModal={setShowPinModal}
+                  handleSave={handleSave}
+                  setShowConfirm={setShowConfirm}
+                  swipeHandlers={swipeHandlers}
+                />
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {showSuccessModal && (
+                <motion.div
+                  className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <motion.div
+                    className="bg-white rounded-xl p-6 w-11/12 max-w-sm text-center"
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0.9 }}
+                  >
+                    <div className="flex justify-center">
+                      <div className="w-48 h-48">
+                        <Lottie animationData={successAnimation} loop={false} />
+                      </div>
+                    </div>
+                    <h2 className="text-xl font-semibold mb-2 text-green-600">
+                      Absensi Berhasil!
+                    </h2>
+                    <p className="text-gray-600 mb-4">
+                      Kamu telah melakukan absensi hari ini 🎉
+                    </p>
+                    <button
+                      onClick={() => {
+                        navigate("/");
+                        localStorage.removeItem("ttd_cache");
+                      }}
+                      className="bg-green-500 w-full text-white px-4 py-2 rounded-full hover:bg-green-600"
+                    >
+                      Tutup
+                    </button>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ))}
+    </>
   );
 };
 

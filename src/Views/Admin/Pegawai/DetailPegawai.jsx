@@ -18,6 +18,8 @@ import {
 import AbsenRow from "./AbsenRow";
 import AttendanceCalendar from "./AttendanceCalendar";
 import { getAbsenByUserId } from "../../../service/Auth/absen.service";
+import { Helmet } from "react-helmet-async";
+import DetailListLaporan from "./DetailListLaporan";
 
 const DetailPegawai = () => {
   const { id } = useParams();
@@ -49,7 +51,18 @@ const DetailPegawai = () => {
       }
     })();
   }, [id]);
-
+  // Di dalam DetailPegawai
+  const refreshAbsen = async () => {
+    try {
+      setIsModalLoading(true);
+      const res = await getAbsenByUserId(id, filterMonth, filterYear);
+      setModalData(res.data || []);
+    } catch (error) {
+      toast.error("Gagal memperbarui data");
+    } finally {
+      setIsModalLoading(false);
+    }
+  };
   useEffect(() => {
     if (isPresensiOpen && id) {
       (async () => {
@@ -97,6 +110,12 @@ const DetailPegawai = () => {
 
   return (
     <div className="space-y-6 p-1 animate-fade-in relative text-sm">
+      <Helmet>
+        <title>
+          Detail Pegawai - Sistem Informasi Kepegawaian KPU Kabupaten
+          Sekadau{" "}
+        </title>
+      </Helmet>
       {/* HEADER BAR */}
       <div className="bg-white p-4 rounded-3xl border border-slate-100 flex items-center gap-4">
         <button
@@ -216,6 +235,7 @@ const DetailPegawai = () => {
                   data={modalData}
                   month={filterMonth}
                   year={filterYear}
+                  onRefreshData={refreshAbsen}
                   setMonth={setFilterMonth}
                   setYear={setFilterYear}
                 />
@@ -284,9 +304,7 @@ const DetailPegawai = () => {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
-              <div className="text-center py-20 text-slate-400 italic">
-                Belum ada rincian laporan kerja.
-              </div>
+              <DetailListLaporan />
             </div>
           </div>
         </div>
@@ -323,56 +341,71 @@ const DetailPegawai = () => {
         </div>
 
         {/* DETAILS FIELD GRID - TANPA TRUNCATE */}
-        <div className="border-t border-slate-100 bg-slate-50/50 p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
-            <IdCard className="text-slate-400 shrink-0" size={20} />
-            <div className="min-w-0 flex-1">
-              <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
-                NIP / Nomor Identitas
-              </span>
-              <span className="font-bold text-slate-700 block break-words">
-                {data.nip && !data.nip.startsWith("KPU-") ? data.nip : "-"}
-              </span>
+        <div className="border-t border-slate-100 bg-slate-50/50 p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Baris 1 */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+              <IdCard className="text-slate-400 shrink-0" size={20} />
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
+                  NIP / Nomor Identitas
+                </span>
+                <span className="font-bold text-slate-700 block break-words">
+                  {data.nip && !data.nip.startsWith("KPU-") ? data.nip : "-"}
+                </span>
+              </div>
             </div>
-          </div>
+            <div className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+              <Building2 className="text-slate-400 shrink-0" size={20} />
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
+                  Subbagian / Unit Kerja
+                </span>
+                <span className="font-bold text-slate-700 block break-words">
+                  {namaSubbagian}
+                </span>
+              </div>
+            </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
-            <Building2 className="text-slate-400 shrink-0" size={20} />
-            <div className="min-w-0 flex-1">
-              <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
-                Subbagian / Unit Kerja
-              </span>
-              <span className="font-bold text-slate-700 block break-words">
-                {namaSubbagian}
-              </span>
+            {/* Baris 2 (Baru) */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+              <Briefcase className="text-slate-400 shrink-0" size={20} />
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
+                  Golongan / Gaji
+                </span>
+                <span className="font-bold text-slate-700 block break-words">
+                  {data.golongan || "-"} /{" "}
+                  {data.gaji
+                    ? `Rp ${parseInt(data.gaji).toLocaleString("id-ID")}`
+                    : "-"}
+                </span>
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+              <User className="text-slate-400 shrink-0" size={20} />
+              <div className="min-w-0 flex-1">
+                <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
+                  Email & No. HP
+                </span>
+                <span className="font-bold text-slate-700 block break-words text-sm">
+                  {data.email || "-"}
+                  <br />
+                  {data.noHp || "-"}
+                </span>
+              </div>
             </div>
           </div>
-
-          <div className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
-            <Shield className="text-slate-400 shrink-0" size={20} />
-            <div className="min-w-0 flex-1">
-              <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
-                Role Hak Akses
-              </span>
-              <span className="font-bold text-slate-700 uppercase block break-words">
-                {data.role}
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-3 sm:col-span-2 md:col-span-3">
-            <Briefcase className="text-slate-400 shrink-0" size={20} />
-            <div>
-              <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
-                Status Absensi Hari Ini
-              </span>
-              <span
-                className={`text-xs font-extrabold px-2.5 py-0.5 rounded-md mt-1 inline-block ${data.sudah_absen ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-red-50 text-red-600 border border-red-100"}`}
-              >
-                {data.sudah_absen ? "SUDAH ABSEN" : "BELUM ABSEN"}
-              </span>
-            </div>
-          </div>
+        </div>
+        <div className="w-full flex justify-center mb-8 px-4">
+          <button
+            onClick={() =>
+              navigate(`/dashboard/pegawai?id=${data.id}&update=true`)
+            }
+            className="flex w-full font-semibold justify-center items-center gap-2 px-4 py-2 bg-white text-slate-700 rounded-2xl shadow-sm border border-slate-200 hover:bg-slate-50 transition-all"
+          >
+            Update Data
+          </button>
         </div>
       </div>
 

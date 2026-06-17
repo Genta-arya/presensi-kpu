@@ -7,6 +7,7 @@ import {
   updateJabatan,
 } from "../../../service/Jabatan/Jabatan.services";
 import Loading from "../../../components/Loading";
+import { Helmet } from "react-helmet-async";
 
 const LayoutJabatan = () => {
   // State Utama Data & Loading Fetching
@@ -134,6 +135,9 @@ const LayoutJabatan = () => {
 
   return (
     <ContainerDashboard>
+      <Helmet>
+            <title>Manajemen Jabatan - Sistem Informasi Kepegawaian KPU Kabupaten Sekadau </title>
+         </Helmet>
       <div className="space-y-6 w-full ">
         {/* HEADER SECTION */}
         <div className="flex flex-col w-full sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">

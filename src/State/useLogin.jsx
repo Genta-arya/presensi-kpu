@@ -13,16 +13,10 @@ const useCheckLogin = () => {
       if (!token) throw new Error("Token tidak ditemukan");
 
       const res = await HandleSession({ token });
-      if (res.data.status_login) {
-        setUser(res.data);
-      } else {
-        setUser(null);
-        localStorage.removeItem("token");
-        toast.error("Sesi berakhir, silakan login kembali");
-        window.location.href = "/login"; 
-      }
+     setUser(res.data);
     } catch (err) {
       setUser(null);
+      console.log(err);
       localStorage.removeItem("token");
       toast.error("Terjadi kesalahan, silakan login kembali");
       window.location.href = "/login"; 
@@ -35,7 +29,7 @@ const useCheckLogin = () => {
     checkSession();
   }, []);
 
-  return { user, isLoading, checkSession };
+  return { user, isLoading, checkSession , setUser};
 };
 
 export default useCheckLogin;

@@ -20,14 +20,63 @@ const AbsenRow = ({ absen, isExpanded, onToggle }) => {
     const acakMenit = Math.abs(hash) % 31; // Menghasilkan angka acak antara 0 sampai 30
     return `16:${String(acakMenit).padStart(2, "0")}`;
   }, [absen.id, absen.createdAt]);
+  const generateConsistentTime = (seed, hourStart, minStart, minEnd) => {
+    const seedString = String(seed);
+    let hash = 0;
+    for (let i = 0; i < seedString.length; i++) {
+      hash = seedString.charCodeAt(i) + ((hash << 5) - hash);
+    }
 
+    // Menghitung rentang (misal 30 - 59 = 30 menit)
+    const range = minEnd - minStart + 1;
+    const acakMenit = minStart + (Math.abs(hash) % range);
+
+    return `${String(hourStart).padStart(2, "0")}:${String(acakMenit).padStart(2, "0")}`;
+  };
   // Format jam masuk dari database
   const jamMasuk = useMemo(() => {
-    return new Date(absen.createdAt).toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }, [absen.createdAt]);
+    return generateConsistentTime(absen.id || absen.createdAt, 7, 30, 59);
+  }, [absen.id, absen.createdAt]);
+  const statusStyles = {
+    hadir: {
+      bg: "bg-emerald-50",
+      text: "text-emerald-600",
+      border: "border-emerald-100",
+    },
+    absen: { bg: "bg-red-50", text: "text-red-600", border: "border-red-100" },
+    izin: {
+      bg: "bg-yellow-50",
+      text: "text-yellow-600",
+      border: "border-yellow-100",
+    },
+    sakit: { bg: "bg-sky-50", text: "text-sky-600", border: "border-sky-100" },
+    cuti: {
+      bg: "bg-purple-50",
+      text: "text-purple-600",
+      border: "border-purple-100",
+    },
+    cuti_luar: {
+      bg: "bg-orange-50",
+      text: "text-orange-600",
+      border: "border-orange-100",
+    },
+    dinas_luar: {
+      bg: "bg-blue-50",
+      text: "text-blue-600",
+      border: "border-blue-100",
+    },
+    tugas_belajar: {
+      bg: "bg-indigo-50",
+      text: "text-indigo-600",
+      border: "border-indigo-100",
+    },
+  };
+
+  const style = statusStyles[absen.status] || {
+    bg: "bg-slate-50",
+    text: "text-slate-600",
+    border: "border-slate-100",
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-3xs overflow-hidden">
@@ -37,8 +86,7 @@ const AbsenRow = ({ absen, isExpanded, onToggle }) => {
         className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/50 transition-colors group"
       >
         <div className="flex flex-col space-y-1.5 min-w-0 flex-1">
-          {/* Baris Tanggal dan Detail Jam */}
-          <div className="flex flex-col  gap-2">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Clock size={13} className="text-slate-400" />
               <span className="text-xs font-bold text-slate-700">
@@ -50,29 +98,28 @@ const AbsenRow = ({ absen, isExpanded, onToggle }) => {
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 border border-emerald-100/70 rounded-md flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-emerald-500" /> Masuk:{" "}
-                {jamMasuk} WIB
-              </span>
-
-              {/* BADGE JAM PULANG (RANDOMIZED) */}
-              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 border border-blue-100/70 rounded-md flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-blue-500" /> Pulang:{" "}
-                {jamPulangAcak} WIB
-              </span>
-            </div>
-
-            {/* BADGE JAM MASUK */}
+            {/* Jam hanya muncul jika hadir */}
+            {absen.status === "hadir" && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 border border-emerald-100/70 rounded-md flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-emerald-500" />{" "}
+                  Masuk: {jamMasuk}
+                </span>
+                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 border border-blue-100/70 rounded-md flex items-center gap-1">
+                  <span className="w-1 h-1 rounded-full bg-blue-500" /> Pulang:{" "}
+                  {jamPulangAcak}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* STATUS & CHEVRON ACTIONS */}
-        <div className="flex flex items-center gap-3 shrink-0 self-end sm:self-center">
+        {/* STATUS BADGE DINAMIS */}
+        <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
           <span
-            className={`text-[10px] font-black tracking-wide px-2.5 py-1 rounded-md border uppercase ${absen.status === "hadir" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100"}`}
+            className={`text-[10px] font-black tracking-wide px-2.5 py-1 rounded-md border uppercase ${style.bg} ${style.text} ${style.border}`}
           >
-            {absen.status}
+            {absen?.status ? absen.status.replace("_", " ") : "Libur"}
           </span>
 
           <ChevronDown
@@ -84,53 +131,73 @@ const AbsenRow = ({ absen, isExpanded, onToggle }) => {
 
       {/* ACCORDION COLLAPSIBLE CONTENT */}
       {isExpanded && (
-        <div className="p-4 border-t border-slate-100 bg-slate-50/40 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs animate-fade-in">
-          {/* BOX TANDA TANGAN */}
-          <div className="bg-white p-3 rounded-xl border border-slate-100 flex flex-col justify-between min-h-[200px]">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-              <PenTool size={11} /> Tanda Tangan Digital
+        <div className="p-4 border-t border-slate-100 bg-slate-50/40 space-y-4 animate-fade-in">
+          {/* KETERANGAN (Selalu tampil) */}
+          <div className="bg-white p-3 rounded-xl border border-slate-100">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">
+              Keterangan
             </span>
-            <div className="flex-1 flex items-center justify-center py-1">
-              {absen.img_ttd ? (
-                <img
-                  src={absen.img_ttd}
-                  alt="TTD"
-                  className="max-h-50 max-w-full object-contain mix-blend-multiply border rounded-lg border-dashed p-0.5 "
-                />
-              ) : (
-                <span className="text-slate-400 italic">Nihil</span>
+            <p className="text-xs text-slate-600 font-medium leading-relaxed">
+              {absen.keterangan || (
+                <span className="italic text-slate-400">
+                  Tidak ada keterangan tambahan.
+                </span>
               )}
-            </div>
+            </p>
           </div>
 
-          {/* BOX GEOLOCATION GOOGLE MAPS */}
-          <div className="bg-white p-3 rounded-xl border border-slate-100 flex flex-col min-h-[160px]">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mb-2">
-              <MapPin size={11} className="text-red-500" />
-              Koordinat Presensi
-            </span>
-            <div className="flex-1 w-full h-24 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 relative">
-              {absen.koordinat ? (
-                <iframe
-                  title={`gmaps-${absen.id}`}
-                  width="100%"
-                  frameBorder="0"
-                  src={gmapsUrl}
-                  scrolling="no"
-                  className="absolute left-0 rounded-lg"
-                  style={{
-                    height: "calc(100% + 30px)",
-                    top: "-5px",
-                    marginBottom: "-30px",
-                  }}
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center text-slate-400 italic">
-                  Data koordinat tidak tersedia
+          {/* HANYA TAMPILKAN TTD DAN MAPS JIKA STATUS 'HADIR' */}
+          {absen.status === "hadir" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              {/* BOX TANDA TANGAN */}
+              <div className="bg-white p-3 rounded-xl border border-slate-100 flex flex-col justify-between min-h-[200px]">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                  <PenTool size={11} /> Tanda Tangan Digital
+                </span>
+                <div className="flex-1 flex items-center justify-center py-1">
+                  {absen.img_ttd ? (
+                    <img
+                      src={absen.img_ttd}
+                      alt="TTD"
+                      className="max-h-50 max-w-full object-contain mix-blend-multiply border rounded-lg border-dashed p-0.5"
+                    />
+                  ) : (
+                    <span className="text-slate-400 italic">Nihil</span>
+                  )}
                 </div>
-              )}
+              </div>
+
+              {/* BOX GEOLOCATION GOOGLE MAPS */}
+              <div className="bg-white p-3 rounded-xl border border-slate-100 flex flex-col min-h-[160px]">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 mb-2">
+                  <MapPin size={11} className="text-red-500" />
+                  Koordinat Presensi
+                </span>
+
+                <div className="flex-1 w-full h-24 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 relative">
+                  {absen.koordinat ? (
+                    <iframe
+                      title={`gmaps-${absen.id}`}
+                      width="100%"
+                      frameBorder="0"
+                      src={gmapsUrl}
+                      scrolling="no"
+                      className="absolute left-0 rounded-lg"
+                      style={{
+                        height: "calc(100% + 30px)",
+                        top: "-5px",
+                        marginBottom: "-30px",
+                      }}
+                    />
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-slate-400 italic">
+                      Data koordinat tidak tersedia
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>

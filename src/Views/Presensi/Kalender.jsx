@@ -70,7 +70,7 @@ const AttendanceCalendar = ({
 
   return (
     <>
-      <div className="bg-white rounded-[32px] shadow-2xl p-6 mt-6 border border-gray-100 max-w-md mx-auto">
+      <div className="bg-white rounded-[32px] shadow-2xl p-6 mt-6 border border-gray-100 ">
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>

@@ -11,9 +11,9 @@ export const PostLaporan = async (data) => {
   }
 };
 
-export const GetLaporanByUser = async (userId) => {
+export const GetLaporanByUser = async (userId , date = null) => {
   try {
-    const response = await axiosInstance.get(`/laporan/data?idUser=${userId}`);
+    const response = await axiosInstance.get(`/laporan/data?idUser=${userId}&date=${date}`);
     return response.data;
   } catch (error) {
     throw error;

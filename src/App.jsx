@@ -29,6 +29,7 @@ import LayoutUnitKerja from "./Views/Admin/Pegawai/LayoutUnitKerja";
 import LayoutRole from "./Views/Admin/Pegawai/LayoutRole";
 import DetailUnitKerja from "./Views/Admin/Pegawai/DetailUnitKerja";
 import DetailPegawai from "./Views/Admin/Pegawai/DetailPegawai";
+import PengajuanCuti from "./Views/PengajuanCuti/PengajuanCuti";
 
 const AppRoutes = () => {
   return (
@@ -123,6 +124,10 @@ const AppRoutes = () => {
                 <Route
                   path="/data/rekap-absensi"
                   element={<ProtectedRoute element={<ListPresensi />} />}
+                />
+                 <Route
+                  path="/data/pengajuan-cuti"
+                  element={<ProtectedRoute element={<PengajuanCuti />} />}
                 />
                 <Route
                   path="/pengaturan"

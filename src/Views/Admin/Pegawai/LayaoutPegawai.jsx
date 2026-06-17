@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { listUser } from "../../../service/User/user.services";
+import { Link, useLocation, useNavigate } from "react-router-dom"; // Ubah useParams ke useLocation
+import {
+  createUser,
+  deleteUser,
+  listUser,
+  updateIndex,
+} from "../../../service/User/user.services";
 import { toast } from "sonner";
 import Loading from "../../../components/Loading";
 import {
@@ -19,13 +24,14 @@ import {
 } from "lucide-react";
 import { getJabatan } from "../../../service/Jabatan/Jabatan.services";
 import { UpdateSingleUser } from "../../../service/Auth/auth.service";
+import { Helmet } from "react-helmet-async";
 
 const LayaoutPegawai = () => {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-
-  // SINKRONISASI STATE TAB: Disamakan menggunakan lowercase sesuai ekspektasi API Backend
+  const navigate = useNavigate();
+  // SINKRONISASI STATE TAB
   const [activeTab, setActiveTab] = useState("active");
 
   // State List Jabatan Dinamis dari DB
@@ -46,6 +52,15 @@ const LayaoutPegawai = () => {
     role: "USER",
     isActive: true,
   });
+
+  // --- AMBIL QUERY PARAMETER DARI URL ---
+  const location = useLocation();
+  const queryParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search],
+  );
+  const queryId = queryParams.get("id");
+  const queryUpdate = queryParams.get("update");
 
   // Ambil data teks jabatan aktif yang sedang dipilih oleh form saat ini
   const selectedJabatanName = useMemo(() => {
@@ -88,7 +103,6 @@ const LayaoutPegawai = () => {
   const fetchPegawai = async () => {
     try {
       setIsLoading(true);
-      // Kirim parameter activeTab ("active" atau "inactive") langsung ke service API
       const response = await listUser(activeTab);
       const formattedData = (response.data || []).map((item) => ({
         ...item,
@@ -112,8 +126,17 @@ const LayaoutPegawai = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus pegawai ini?")) {
-      toast.success("Pegawai berhasil dihapus.");
-      fetchPegawai();
+      try {
+        setIsLoading(true);
+        await deleteUser(id);
+        toast.success("Pegawai berhasil dihapus");
+        fetchPegawai();
+        // scroll data paling bawah
+      } catch (error) {
+        toast.error(error.response?.data?.message || "Gagal menghapus pegawai");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -139,6 +162,9 @@ const LayaoutPegawai = () => {
   const handleCloseModal = () => {
     if (isSubmitting) return;
     setIsModalOpen(false);
+    // balikan url nya
+    setSearch("");
+    navigate("/dashboard/pegawai");
   };
 
   const handleSubmit = async (e) => {
@@ -148,15 +174,24 @@ const LayaoutPegawai = () => {
     setIsSubmitting(true);
     try {
       const payload = {
-        ...formData,
+        name: formData.name,
+        nip: formData.nip,
+        jabatanId: formData.jabatan, // Kirim sebagai jabatanId
+        role: formData.role,
         status: formData.isActive,
       };
-      await (isEdit ? UpdateSingleUser(formData.id, payload) : toast.info("p"));
+      await (isEdit
+        ? UpdateSingleUser(formData.id, payload)
+        : createUser(payload));
 
       toast.success(
         isEdit ? "Data berhasil diupdate!" : "Data berhasil ditambah!",
       );
+      if (!isEdit) {
+        window.scrollTo(0, document.body.scrollHeight);
+      }
       setIsModalOpen(false);
+      navigate("/dashboard/pegawai");
       await fetchPegawai();
     } catch (error) {
       console.error(error);
@@ -166,12 +201,30 @@ const LayaoutPegawai = () => {
     }
   };
 
+  // Efek Pertama: Monitor pergantian Tab Aktif / Inaktif
   useEffect(() => {
     fetchPegawai();
     window.scrollTo(0, 0);
-  }, [activeTab]); // <--- Efek memantau state tab kecil
+  }, [activeTab]);
 
-  // LOGIKA FILTER TEXT SEARCH (Satu lapis filter karena status sudah dikunci database)
+  // --- EFEK KEDUA: DETEKSI URL QUERY ?id=xxx&update=true ---
+  useEffect(() => {
+    if (queryId && queryUpdate === "true" && data.length > 0) {
+      // Cari data pegawai yang id-nya sesuai di dalam state data saat ini
+      const pegawaiTerpilih = data.find(
+        (p) => String(p.id) === String(queryId),
+      );
+      setSearch(pegawaiTerpilih?.name || "");
+
+      if (pegawaiTerpilih) {
+        handleOpenModal(pegawaiTerpilih);
+      } else {
+        navigate("/dashboard/pegawai");
+      }
+    }
+  }, [queryId, queryUpdate, data]); // Dipicu ulang ketika data pegawai selesai di-load dari API
+
+  // LOGIKA FILTER TEXT SEARCH
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       const nameData = item.name?.toLowerCase() || "";
@@ -193,12 +246,54 @@ const LayaoutPegawai = () => {
     });
   }, [data, search]);
 
+  const moveUser = async (currentIndex, direction) => {
+    const targetIndex =
+      direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+    if (targetIndex < 0 || targetIndex >= data.length) return;
+
+    const currentItem = data[currentIndex];
+    const targetItem = data[targetIndex];
+
+    try {
+      setIsLoading(true);
+      // Asumsi backend Anda mendukung pertukaran dua data
+      await updateIndex({
+        id1: currentItem.id,
+        index1: targetIndex, // Posisi baru untuk currentItem
+        id2: targetItem.id,
+        index2: currentIndex, // Posisi baru untuk targetItem
+      });
+
+      // Update state lokal secara instan (Optimistic UI)
+      const newData = [...data];
+      newData[currentIndex] = targetItem;
+      newData[targetIndex] = currentItem;
+      setData(newData);
+
+      toast.success("Urutan berhasil diubah");
+    } catch (error) {
+      console.error(error);
+      toast.error("Gagal mengubah urutan.");
+      // Jika gagal, ambil ulang data dari server untuk memastikan sinkronisasi
+      fetchPegawai();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 relative">
+      <Helmet>
+        <title>
+          Manajemen Pegawai - Sistem Informasi Kepegawaian KPU Kabupaten
+          Sekadau{" "}
+        </title>
+      </Helmet>
       {/* MODAL FORM */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-xl shadow-2xl">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-[70%] shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-black text-slate-800">
                 {isEdit ? "Edit Pegawai" : "Tambah Pegawai"}
@@ -258,22 +353,21 @@ const LayaoutPegawai = () => {
               </div>
 
               {/* FILTER HIDE / SHOW NIP INPUT FIELD */}
-              {!shouldHideNip && (
-                <div className="animate-fade-in">
-                  <label className="block text-sm font-bold text-slate-700 mb-1">
-                    NIP / Nomor Identitas
-                  </label>
-                  <input
-                    type="text"
-                    disabled={isSubmitting}
-                    value={formData.nip || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, nip: e.target.value })
-                    }
-                    className="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-sm"
-                  />
-                </div>
-              )}
+
+              <div className="animate-fade-in">
+                <label className="block text-sm font-bold text-slate-700 mb-1">
+                  NIP / Nomor Identitas
+                </label>
+                <input
+                  type="text"
+                  disabled={isSubmitting}
+                  value={formData.nip || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nip: e.target.value })
+                  }
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-sm"
+                />
+              </div>
 
               <div className="flex items-center gap-4 py-2">
                 <span className="font-bold text-slate-700 text-sm">
@@ -330,7 +424,9 @@ const LayaoutPegawai = () => {
       <div className="bg-white rounded-3xl p-6 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-800">Data Pegawai</h1>
+            <h1 className="text-2xl font-black text-slate-800">
+              Manajemen Pegawai
+            </h1>
             <p className="text-slate-500 mt-1">
               Daftar pegawai KPU Kabupaten Sekadau
             </p>
@@ -376,35 +472,43 @@ const LayaoutPegawai = () => {
         ))}
       </div>
 
-      {/* NAVIGATION TABS (DIPERBAIKI MENJADI UTUH DAN TERINTEGRASI DENGAN DATABASE) */}
+      {/* NAVIGATION TABS */}
       <div className="flex border-b w-full items-center justify-center border-slate-200 gap-2">
         <button
           onClick={() => setActiveTab("active")}
           className={`flex items-center justify-center w-full text-center gap-2 pb-3.5 px-4 font-black text-sm tracking-wide transition-all border-b-2 outline-none
-          ${activeTab === "active" ? "border-red-600 text-red-600" : "border-transparent text-slate-400 hover:text-slate-600"}`}
+    ${activeTab === "active" ? "border-red-600 text-red-600" : "border-transparent text-slate-400 hover:text-slate-600"}`}
         >
           <CheckCircle2 size={16} />
           <span>Pegawai Aktif</span>
           <span
             className={`text-[10px] font-bold px-2 py-0.5 rounded-full rounded-tl-none leading-none transition-all
-            ${activeTab === "active" ? "bg-red-100 text-red-600" : "bg-slate-100 text-slate-400"}`}
+      ${activeTab === "active" ? "bg-red-100 text-red-600" : "bg-slate-100 text-slate-400"}`}
           >
-            {activeTab === "active" ? filteredData.length : "-"}
+            {isLoading
+              ? "-"
+              : activeTab === "active"
+                ? filteredData.length
+                : "-"}
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab("inactive")}
           className={`flex items-center w-full justify-center text-center gap-2 pb-3.5 px-4 font-black text-sm tracking-wide transition-all border-b-2 outline-none
-          ${activeTab === "inactive" ? "border-red-600  text-red-600" : "border-transparent text-slate-400 hover:text-slate-600"}`}
+    ${activeTab === "inactive" ? "border-red-600  text-red-600" : "border-transparent text-slate-400 hover:text-slate-600"}`}
         >
           <XCircle size={16} />
           <span>Pegawai Inaktif (Arsip)</span>
           <span
             className={`text-[10px] font-bold px-2 py-0.5 rounded-full rounded-tl-none leading-none transition-all
-            ${activeTab === "inactive" ? "bg-red-100 text-red-600" : "bg-slate-100 text-slate-400"}`}
+      ${activeTab === "inactive" ? "bg-red-100 text-red-600" : "bg-slate-100 text-slate-400"}`}
           >
-            {activeTab === "inactive" ? filteredData.length : "-"}
+            {isLoading
+              ? "-"
+              : activeTab === "inactive"
+                ? filteredData.length
+                : "-"}
           </span>
         </button>
       </div>
@@ -415,15 +519,11 @@ const LayaoutPegawai = () => {
           <Loading />
         </div>
       ) : filteredData.length > 0 ? (
-        <div
-          className="grid cursor-pointer grid-cols-1 xl:grid-cols-2 gap-4 animate-fade-in"
-        >
-          {filteredData.map((pegawai) => {
+        <div className="grid cursor-pointer grid-cols-1 xl:grid-cols-2 gap-4 animate-fade-in">
+          {filteredData.map((pegawai, index) => {
             const textJabatan =
               pegawai.jabatan?.nama_jabatan || pegawai.jabatan?.nama || "";
             const posisiStruktur = pegawai.strukturUnit?.[0]?.posisi || "";
-
-            // Mengambil info subbagian pertama dari array relasi baru
             const namaSubbagian =
               pegawai.strukturUnit?.[0]?.unitKerja?.nama || "";
 
@@ -457,17 +557,70 @@ const LayaoutPegawai = () => {
 
                       <div className="flex gap-1 shrink-0">
                         <button
-                          onClick={() => handleOpenModal(pegawai)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleOpenModal(pegawai);
+                          }}
                           className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                         >
                           <Edit2 size={16} />
                         </button>
                         <button
-                          onClick={() => handleDelete(pegawai.id)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDelete(pegawai.id);
+                          }}
                           className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <Trash2 size={16} />
                         </button>
+                        <div className="flex flex-col gap-1 border-l border-slate-100 pl-2">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              // 'index' berasal dari map(pegawai, index)
+                              moveUser(index, "up");
+                            }}
+                            disabled={index === 0 || isLoading}
+                            className="p-0.5 text-slate-400 hover:text-red-600 disabled:opacity-20 transition"
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                            >
+                              <path d="M18 15l-6-6-6 6" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              moveUser(index, "down");
+                            }}
+                            disabled={
+                              index === filteredData.length - 1 || isLoading
+                            }
+                            className="p-0.5 text-slate-400 hover:text-red-600 disabled:opacity-20 transition"
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                            >
+                              <path d="M6 9l6 6 6-6" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -492,7 +645,6 @@ const LayaoutPegawai = () => {
                         )}
                       </div>
 
-                      {/* PEMBACAAN RELASI BARU: Diambil aman dari array strukturUnit pivot */}
                       {namaSubbagian && (
                         <p className="text-slate-500 text-xs flex items-center gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-100/60 font-medium">
                           <Building2
@@ -501,21 +653,17 @@ const LayaoutPegawai = () => {
                           />
                           <span className="truncate">
                             {namaSubbagian}
-                            {/* Beri tanda jika Sekretaris tergabung di banyak subbagian sekaligus */}
                             {pegawai.strukturUnit.length > 1 &&
                               ` (+${pegawai.strukturUnit.length - 1} Subbagian)`}
                           </span>
                         </p>
                       )}
                     </div>
-
-                    {/* BOTTOM ACTION BAR */}
                   </div>
                 </div>
               </Link>
             );
           })}
-          
         </div>
       ) : (
         <div className="text-center py-16 bg-white rounded-3xl border border-slate-100 text-sm text-slate-400 italic font-medium">

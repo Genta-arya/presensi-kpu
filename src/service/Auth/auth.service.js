@@ -1,3 +1,4 @@
+import axios from "axios";
 import axiosInstance from "../axiosInstance";
 
 export const HandleLogin = async (data) => {
@@ -91,3 +92,42 @@ export const UpdateSingleUser = async (id, data) => {
     throw error;
   }
 };
+
+
+export const UploadImage = async (file) => {
+  console.log(file);
+  try {
+    const response = await axios.post(
+      "https://bucket.mgentaarya.my.id/uploads.php",
+      { file: file },
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          genta: "Genta@456",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateAvatar = async (id, data) => {
+  try {
+    const response = await axiosInstance.post(`/auth/update-avatar/${id}`, data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateProfil = async (id, data) => {
+  try {
+    const response = await axiosInstance.post(`/auth/update-profil/${id}`, data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+  
+}

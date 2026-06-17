@@ -99,7 +99,8 @@ const InfoCard = ({ date, title, content, onClick }) => (
 );
 
 const MainMenu = () => {
-  const { isLoading, checkSession } = useCheckLogin();
+  const { isLoading, checkSession , user} = useCheckLogin();
+ 
   const navigate = useNavigate();
   const [activeInfo, setActiveInfo] = useState(null);
   const [showIframeModal, setShowIframeModal] = useState(false);
@@ -133,7 +134,7 @@ const MainMenu = () => {
     { path: "/laporan-harian", icon: FileText, color: "text-teal-600", label: "Laporan Harian" },
     { path: "/pegawai", icon: UserSquare2, color: "text-blue-600", label: "Daftar Pegawai" },
     { type: "toast", icon: BarChart3, color: "text-purple-600", label: "Kenaikan Gaji Berkala" },
-    { type: "toast", icon: FilePlus, color: "text-fuchsia-600", label: "Pengajuan Cuti" },
+    { path: "/data/pengajuan-cuti", icon: FilePlus, color: "text-fuchsia-600", label: "Pengajuan Cuti" },
     { type: "iframe", icon: ClipboardList, color: "text-red-600", label: "Informasi Pelayanan" },
   ];
 
@@ -152,7 +153,9 @@ const MainMenu = () => {
     };
   }, [activeInfo, showIframeModal]);
 
-  if (isLoading) return <Loading />;
+if (isLoading || !user) {
+  return <Loading />;
+}
 
   return (
     <Container>

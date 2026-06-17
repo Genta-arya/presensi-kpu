@@ -11,6 +11,7 @@ import {
 import { listUser } from "../../../service/User/user.services";
 import Loading from "../../../components/Loading";
 import { toast } from "sonner";
+import { Helmet } from "react-helmet-async";
 
 const DetailUnitKerja = () => {
   const { id } = useParams();
@@ -139,6 +140,9 @@ const DetailUnitKerja = () => {
 
   return (
     <div className="space-y-6 ">
+      <Helmet>
+            <title>{data?.nama} - Sistem Informasi Kepegawaian KPU Kabupaten Sekadau </title>
+         </Helmet>
       {/* HEADER DETAIL */}
       <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
         <button

@@ -5,9 +5,12 @@ import App from "./App.jsx";
 import { Toaster } from "sonner";
 import { UserProvider } from "./State/useContext.jsx";
 import "react-calendar/dist/Calendar.css";
+import { HelmetProvider } from "react-helmet-async";
 createRoot(document.getElementById("root")).render(
   <>
-    <App />
-    <Toaster richColors position="top-center" duration={3000} closeButton />
+    <HelmetProvider>
+      <App />
+      <Toaster richColors position="top-center" duration={6000} closeButton />
+    </HelmetProvider>
   </>,
 );
