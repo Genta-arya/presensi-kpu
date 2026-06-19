@@ -19,6 +19,7 @@ import LoadingLokasi from "../components/LoadingLokasi";
 import LokasiCheck from "../components/LokasiCheck";
 import KonfirmasiAbsensi from "../components/KonfirmasiAbsensi";
 import { s } from "framer-motion/client";
+import { Helmet } from "react-helmet-async";
 
 const AbsenLayout = () => {
   const [dateNow, setDateNow] = useState("");
@@ -229,6 +230,11 @@ const AbsenLayout = () => {
 
   if (showPinModal) {
     return (
+      <>
+      <Helmet>
+        <title>Konfirmasi Pin</title>
+      </Helmet>
+      
       <SubmitPin
         handleSubmitPin={handleSubmitPin}
         pin={pin}
@@ -236,11 +242,16 @@ const AbsenLayout = () => {
         navigate={navigate}
         setShowPinModal={setShowPinModal}
       />
+      
+      </>
     );
   }
 
   return (
     <>
+    <Helmet>
+      <title>Presensi Masuk</title>
+    </Helmet>
       {
         (!isAbsen && (
           <div className="min-h-screen bg-white ">

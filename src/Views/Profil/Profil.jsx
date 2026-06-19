@@ -23,6 +23,9 @@ import {
 } from "../../service/Auth/auth.service";
 import { CgSpinner } from "react-icons/cg";
 import { createReportData } from "../../service/ReportData/ReportData.services";
+import Loading from "../../components/Loading";
+import { Helmet } from "react-helmet-async";
+
 
 const Profil = () => {
   const { user, setUser } = useCheckLogin();
@@ -228,9 +231,17 @@ const Profil = () => {
     focus-within:ring-red-100
   `;
 
+  if (loading || !user) {
+    return <Loading />;
+  }
+
   return (
     <>
       <Navigations title={"Profil"} />
+      <Helmet>
+        <title>Profil</title>
+      </Helmet>
+     
 
       <div className="min-h-screen bg-gray-100 pt-20 px-4 pb-10">
         <div className="max-w-5xl mx-auto">
@@ -263,14 +274,7 @@ const Profil = () => {
             {/* CONTENT */}
             <div className="pt-26 p-6">
               {/* TOP INFO */}
-              <div className="text-center mb-8">
-                <h1 className="text-xl font-bold text-gray-800">
-                  {formData.name || "Nama Pegawai"}
-                </h1>
-                <p className="text-gray-500 mt-1">
-                  {formData.jabatan || "Jabatan"}
-                </p>
-              </div>
+            
 
               {/* FORM GRID */}
               <div className="grid md:grid-cols-2 gap-5">

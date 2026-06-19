@@ -107,7 +107,7 @@ const ListUser = () => {
     <>
       <Navigations title={pageTitle} />
 
-      <div className="container mx-auto px-4 py-6 pt-20">
+      <div className=" px-4 py-6 pt-20">
         <div className="flex  lg:hidden flex-col sm:flex-row justify-between items-center gap-4 mb-6">
           <div className="flex - flex-col  gap-2 w-full ">
             <div className="flex w-full gap-2">
@@ -171,7 +171,6 @@ const ListUser = () => {
               <motion.div
                 key={user.id}
                 onClick={() => {
-                 
                   // jika role user adalah admin, arahkan ke halaman absensi dengan user id
                   {
                     user.role === "admin"
@@ -193,7 +192,10 @@ const ListUser = () => {
                         {user.name || "Tanpa Nama"}
                       </h2>
                       <p className="text-sm font-bold text-gray-700">
-                        <strong></strong> {user.jabatan || "-"}
+                        {/* Mengambil nama jabatan jika berupa objek, jika string pakai langsung, jika kosong beri '-' */}
+                        {typeof user.jabatan === "object"
+                          ? user.jabatan?.nama
+                          : user.jabatan || "-"}
                       </p>
                     </div>
                   </div>
@@ -216,8 +218,6 @@ const ListUser = () => {
           </div>
         )}
       </div>
-
-    
     </>
   );
 };

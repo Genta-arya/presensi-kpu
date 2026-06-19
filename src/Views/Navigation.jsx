@@ -1,18 +1,27 @@
 import React from "react";
-import { FaChevronLeft, FaBars } from "react-icons/fa";
-import { useLocation } from "react-router-dom";
+import { FaChevronLeft } from "react-icons/fa";
+import { FaGear } from "react-icons/fa6";
+import { Link, useLocation, useNavigate } from "react-router-dom"; // Tambahkan useNavigate di sini
 
 const Navigations = ({ title }) => {
   const location = useLocation();
+  const navigate = useNavigate(); // Inisialisasi hook navigate
 
   const isProfilePath = location.pathname.includes("profil") || location.pathname.includes("profile");
 
   const handleBack = () => {
-    // Memaksa reload ke halaman sebelumnya atau ke root
+    // --- PERBAIKAN DI SINI ---
+    // Jika path saat ini tepat bernilai /pegawai, langsung arahkan ke root (/)
+    if (location.pathname === "/pegawai") {
+      navigate("/");
+      return;
+    }
+
+    // Jika bukan dari path /pegawai, gunakan logika history back bawaan react-router
     if (window.history.length > 1 && window.history.state?.idx > 0) {
-      window.history.back(); // Reloads via browser native back
+      navigate(-1); // Ini adalah cara standar react-router-dom untuk kembali ke halaman sebelumnya
     } else {
-      window.location.href = "/"; // Full reload ke home
+      navigate("/"); // Fallback aman ke halaman utama jika tidak ada history
     }
   };
 
@@ -29,14 +38,14 @@ const Navigations = ({ title }) => {
         <span className="ml-2 text-sm font-bold">{title}</span>
       </div>
 
-      {/* SISI KANAN: Tombol Garis Tiga */}
+      {/* SISI KANAN: Tombol Pengaturan */}
       {isProfilePath && (
-        <a 
-          href="/pengaturan" 
+        <Link 
+          to={"/pengaturan"}
           className="cursor-pointer text-xl hover:opacity-80 transition-opacity p-1"
         >
-          <FaBars />
-        </a>
+          <FaGear />
+        </Link>
       )}
     </div>
   );

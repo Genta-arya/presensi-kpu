@@ -14,6 +14,7 @@ import Navigations from "../Navigation";
 import { AnimatePresence } from "framer-motion";
 import { HandleLoginPage, ResetMFA } from "../../service/Auth/auth.service";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 const GantiMFA = () => {
   const { user } = useCheckLogin();
@@ -91,6 +92,9 @@ const GantiMFA = () => {
   return (
     <>
       <Navigations title="Reset MFA" />
+      <Helmet>
+        <title>Reset MFA</title>
+      </Helmet>
       <div className="pt-20 p-4 min-h-screen bg-gray-50 flex flex-col justify-between pb-8">
         <div className="w-full mx-auto space-y-6 ">
           
@@ -126,7 +130,7 @@ const GantiMFA = () => {
                       type="text"
                       name="nip"
                       disabled
-                      value={verifyForm.nip}
+                      value={!user ? "Memuat data..." : verifyForm.nip }
                       onChange={handleVerifyChange}
                       placeholder="Masukkan NIP Anda"
                       className="w-full bg-gray-50 border border-gray-200 text-gray-700 py-3 pl-11 pr-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-500 text-xs font-bold transition-all"
@@ -195,7 +199,7 @@ const GantiMFA = () => {
           {!isVerified ? (
             <button
               type="button"
-              disabled={isLoading}
+              disabled={isLoading || !user}
               onClick={handleVerifyAccount}
 
               className="w-full bg-red-600 text-white font-black py-3 px-4 rounded-2xl shadow-lg hover:bg-red-500 active:scale-[0.99] disabled:bg-gray-400 transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider"

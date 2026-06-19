@@ -18,6 +18,7 @@ import { getAbsenByUserId } from "../../service/Auth/absen.service";
 
 import Loading from "../../components/Loading";
 import AttendanceCalendar from "./Kalender";
+import { Helmet } from "react-helmet-async";
 
 const ListPresensi = () => {
   const [data, setData] = React.useState([]);
@@ -75,6 +76,9 @@ const ListPresensi = () => {
   return (
     <>
       <Navigations title="Kembali" />
+      <Helmet>
+        <title>Rekap Presensi</title>
+      </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-red-50 via-white to-white pt-20 pb-10">
         <div className="max-w-6xl mx-auto px-4">

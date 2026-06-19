@@ -13,13 +13,11 @@ import DetailLaporan from "./Views/LaporanKegiatan/DetailLaporan";
 import Berita from "./Views/Berita/Berita";
 import AbsenPulang from "./Views/AbsenPulang";
 import Profil from "./Views/Profil/Profil";
-
 import GantiPassword from "./Views/Profil/GantiPassword";
 import GantiMFA from "./Views/Profil/GantiMFA";
 import KebijakanPrivas from "./components/KebijakanPrivas";
 import Dashboard from "./Views/Admin/Dashboard/Dashboard";
 import MainDashboard from "./Views/Admin/Dashboard/MainDashboard";
-import ListPegawai from "./Views/Admin/Pegawai/LayaoutPegawai";
 import LayaoutPegawai from "./Views/Admin/Pegawai/LayaoutPegawai";
 import LayoutPresensi from "./Views/Admin/Presensi/LayoutPresensi";
 import ListPresensi from "./Views/Presensi/ListPresensi";
@@ -72,10 +70,7 @@ const AppRoutes = () => {
                     path="subbagian/detail/:id"
                     element={<DetailUnitKerja />}
                   />
-                  <Route
-                    path="pegawai/:id"
-                    element={<DetailPegawai />}
-                  />
+                  <Route path="pegawai/:id" element={<DetailPegawai />} />
                 </Route>
                 <Route
                   path="/presensi-harian"
@@ -125,7 +120,7 @@ const AppRoutes = () => {
                   path="/data/rekap-absensi"
                   element={<ProtectedRoute element={<ListPresensi />} />}
                 />
-                 <Route
+                <Route
                   path="/data/pengajuan-cuti"
                   element={<ProtectedRoute element={<PengajuanCuti />} />}
                 />

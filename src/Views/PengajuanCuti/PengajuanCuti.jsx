@@ -31,6 +31,7 @@ import {
 import useCheckLogin from "../../State/useLogin";
 import { CgSpinner } from "react-icons/cg";
 import FormAjukanCuti from "./FormPengajuanCuti";
+import { Helmet } from "react-helmet-async";
 
 const PengajuanCuti = () => {
   const [search, setSearch] = useState("");
@@ -255,6 +256,9 @@ const PengajuanCuti = () => {
   return (
     <>
       <Navigations title={isAdding ? "Tambah Cuti" : "Pengajuan Cuti"} />
+      <Helmet>
+        <title>{isAdding ? "Tambah Cuti" : "Pengajuan Cuti"}</title>
+      </Helmet>
 
       <div className="min-h-screen bg-gray-100 pt-20 pb-28 px-4">
         <div className="max-w-5xl mx-auto">

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Navigations from "../Navigation";
 import useCheckLogin from "../../State/useLogin";
+import { Helmet } from "react-helmet-async";
 
 const Pengaturan = () => {
   const navigate = useNavigate();
@@ -79,6 +80,9 @@ const Pengaturan = () => {
   return (
     <>
       <Navigations title="Pengaturan" />
+      <Helmet>
+        <title>Pengaturan</title>
+      </Helmet>
       <div className="pt-20 p-4 min-h-screen bg-gray-50">
         <div className="mx-auto space-y-4 ">
           {menuSections.map((section, index) => {

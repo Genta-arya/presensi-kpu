@@ -11,6 +11,7 @@ import LoadingLokasi from "../components/LoadingLokasi";
 import Maps from "../components/Maps";
 import useCheckLogin from "../State/useLogin";
 import Loading from "../components/Loading"; // Pastikan impor komponen Loading bawaanmu
+import { Helmet } from "react-helmet-async";
 
 const AbsenPulang = () => {
   const navigate = useNavigate();
@@ -92,6 +93,9 @@ const AbsenPulang = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>Presensi Pulang</title>
+      </Helmet>
       {isLoadingLocation ? (
         <LoadingLokasi />
       ) : (

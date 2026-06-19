@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { FaChevronLeft } from "react-icons/fa";
 import { toast } from "sonner";
 import BottomNav from "../../components/BottomNav";
+import { Helmet } from "react-helmet-async";
 
 const Berita = () => {
   const { isLoading } = useCheckLogin();
@@ -80,6 +81,9 @@ const Berita = () => {
 
   return (
     <>
+    <Helmet>
+        <title>Berita - Komisi Pemilihan Umum Kabupaten Sekadau</title>
+    </Helmet>
       {/* HEADER */}
       <div className="fixed z-20 w-full bg-red-600 text-white ">
         <div className="flex items-center justify-between p-4">

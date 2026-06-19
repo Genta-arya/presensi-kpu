@@ -25,6 +25,7 @@ import { FaBell, FaMapPin } from "react-icons/fa";
 import { toast } from "sonner";
 import { MdDashboard } from "react-icons/md";
 import DateTimeWeather from "./Weather";
+import { Helmet } from "react-helmet-async";
 
 /* SIMPLE FADE */
 const fadeVariant = {
@@ -160,6 +161,9 @@ if (isLoading || !user) {
   return (
     <Container>
       <Headers />
+      <Helmet >
+        <title>Sistem Informasi Kepegawaian KPU Kabupaten Sekadau</title>
+      </Helmet>
 
       <DateTimeWeather />
 

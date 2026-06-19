@@ -6,6 +6,7 @@ import useCheckLogin from "../../State/useLogin";
 import Loading from "../../components/Loading";
 import DOMPurify from "dompurify";
 import { FaChevronLeft } from "react-icons/fa";
+import { Helmet } from "react-helmet-async";
 
 const DetailLaporan = () => {
   const { id } = useParams();
@@ -51,8 +52,11 @@ const navigate = useNavigate();
 
   return (
     <>
+    <Helmet>
+      <title>Detail Laporan - {data.judul}</title>
+    </Helmet>
       <div className="flex  z-20 w-full items-center justify-start gap-2  p-4 bg-red-600 text-white">
-        <FaChevronLeft onClick={() => navigate("/laporan-harian")} />
+        <FaChevronLeft className="cursor-pointer" onClick={() => navigate("/laporan-harian")} />
         <span className="ml-2 text-lg font-bold ">Detail Laporan</span>
       </div>
       <div className="min-h-screen bg-gray-50 p-4 flex justify-center">

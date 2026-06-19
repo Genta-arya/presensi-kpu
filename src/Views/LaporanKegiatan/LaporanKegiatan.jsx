@@ -22,6 +22,7 @@ import {
 import SkeletonLaporan from "./SkeletonLaporan";
 import { FaChevronLeft, FaCircle, FaGlobe, FaTag } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 const LaporanKegiatan = () => {
   const [search, setSearch] = useState("");
@@ -228,6 +229,9 @@ const LaporanKegiatan = () => {
   return (
     <>
       <Navigations title="Laporan Harian" />
+      <Helmet>
+        <title>Laporan Harian</title>
+      </Helmet>
 
       <div className="p-4 space-y-4 pt-20 ">
         <div className="relative">

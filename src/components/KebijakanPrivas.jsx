@@ -1,6 +1,7 @@
 import React from "react";
 import { Shield, Eye, Lock, FileText, CheckCircle, Server } from "lucide-react";
 import Navigations from "../Views/Navigation";
+import { Helmet } from "react-helmet-async";
 
 const KebijakanPrivas = () => {
   const lastUpdated = "21 Mei 2026";
@@ -39,6 +40,9 @@ const KebijakanPrivas = () => {
   return (
     <>
       <Navigations title="Kebijakan Privasi" />
+      <Helmet>
+        <title>Kebijakan Privasi - KPU Kabupaten Sekadau</title>
+      </Helmet>
       <div className="pt-20 p-4 min-h-screen bg-gray-50 flex flex-col justify-between pb-8">
         <div className=" space-y-6">
           

@@ -6,6 +6,36 @@ import { CalendarCheck, LogOut } from "lucide-react";
 import { JABATAN_LABELS } from "../Constants/Constants";
 import useCheckLogin from "../State/useLogin";
 
+// --- KOMPONEN SKELETON LOADING ---
+const HeaderSkeleton = () => {
+  return (
+    <div className="bg-white border-b-[6px] border-gray-200 shadow-[0_12px_30px_-15px_rgba(0,0,0,0.08)] pt-4 pb-4 rounded-b-[28px] animate-pulse">
+      <div className="mx-auto px-5">
+        {/* Baris Utama Skeleton */}
+        <div className="flex items-start justify-between w-full gap-3">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            {/* Avatar Skeleton */}
+            <div className="w-12 h-12 flex-shrink-0 rounded-full bg-gray-200 border-2 border-white mt-0.5" />
+            {/* Info Text Skeleton */}
+            <div className="flex flex-col min-w-0 flex-1 pt-0.5 space-y-2">
+              <div className="w-32 h-4 bg-gray-200 rounded-md" />
+              <div className="w-20 h-3.5 bg-gray-100 rounded-md mt-1" />
+            </div>
+          </div>
+          {/* Tombol Keluar Skeleton */}
+          <div className="w-16 h-6 bg-gray-100 rounded-lg pt-1" />
+        </div>
+
+        {/* Action Panel Skeleton */}
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="bg-gray-100 h-9 rounded-xl" />
+          <div className="bg-gray-100 h-9 rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Headers = () => {
   const { user, setUser } = useCheckLogin();
   const navigate = useNavigate();
@@ -20,7 +50,9 @@ const Headers = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  if (!user) return null;
+  // --- PERBAIKAN DI SINI ---
+  // Jika user belum termuat atau null, tampilkan kerangka skeleton
+  if (!user) return <HeaderSkeleton />;
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -61,7 +93,6 @@ const Headers = () => {
                 </h2>
                 <div className="inline-block bg-red-50/70 border border-red-100 text-red-600 px-2 py-1 rounded-md max-w-full mt-1.5 w-fit">
                   <span className="text-[9px] font-bold tracking-wide uppercase break-words block leading-normal">
-                    {/* AMAN: Menggunakan JABATAN_LABELS jika menggunakan kode, atau langsung menampilkan string namaJabatan */}
                     {JABATAN_LABELS[user?.jabatan?.kode] || namaJabatan}
                   </span>
                 </div>
@@ -113,7 +144,6 @@ const Headers = () => {
         <div className=" mx-auto px-5 space-y-3">
           {/* BARIS UTAMA V2 */}
           <div className="flex items-center justify-between w-full gap-3">
-            {/* Sisi Kiri (Avatar + Informasi Akun Lengkap) */}
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <div
                 onClick={() => navigate("/profil/" + user?.id)}
@@ -131,14 +161,12 @@ const Headers = () => {
                 </h2>
                 <div className="inline-block bg-red-50/70 border border-red-100 text-red-600 px-1.5 py-0.5 rounded mt-0.5 w-fit max-w-full">
                   <span className="text-[8px] font-bold tracking-wide uppercase block max-w-[180px] truncate">
-                    {/* AMAN: Tidak lagi merender objek mentah, melainkan string teks jabatannya */}
                     {namaJabatan}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Sisi Kanan (Tombol Logout Mini) */}
             <button
               onClick={handleLogout}
               className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 flex-shrink-0"

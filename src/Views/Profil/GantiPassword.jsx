@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import useCheckLogin from "../../State/useLogin";
 import Navigations from "../Navigation";
 import { resetPassword } from "../../service/Auth/auth.service";
+import { Helmet } from "react-helmet-async";
 
 const GantiPassword = () => {
   const { user } = useCheckLogin();
@@ -58,6 +59,9 @@ const GantiPassword = () => {
   return (
     <>
       <Navigations title="Kembali" />
+      <Helmet>
+        <title>Perbarui Kata Sandi</title>
+      </Helmet>
       <div className="pt-20 p-4 min-h-screen bg-gray-50 flex flex-col justify-between pb-8">
         <div className="w-full mx-auto space-y-6">
           
