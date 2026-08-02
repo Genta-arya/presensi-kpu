@@ -122,7 +122,7 @@ const AppRoutes = () => {
                 />
                 <Route
                   path="/data/pengajuan-cuti"
-                  element={<ProtectedRoute element={<PengajuanCuti />} />}
+                  element={<ProtectedRoute element={<ComingSoon />} />}
                 />
                 <Route
                   path="/pengaturan"
