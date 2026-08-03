@@ -1,25 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css"; // Menggunakan tema snow (standar)
 
 const Editor = ({ editorContent = "", setEditorContent }) => {
-  
-  // Fungsi untuk menangani perubahan teks
-  const handleChange = (content) => {
+  const [wordCount, setWordCount] = useState(0);
+
+  // Fungsi untuk menangani perubahan teks & menghitung jumlah kata
+  const handleChange = (content, delta, source, editor) => {
     setEditorContent(content);
+
+    // Mengambil teks murni tanpa tag HTML untuk menghitung jumlah kata yang akurat
+    const text = editor.getText().trim();
+    const words = text === "" ? 0 : text.split(/\s+/).length;
+    setWordCount(words);
   };
 
-  // Konfigurasi modul dan toolbar (hanya bold, italic, underline)
+  // Konfigurasi modul (ditambah ordered & bullet list)
   const modules = {
     toolbar: [
       ["bold", "italic", "underline"],
+      [{ list: "ordered" }, { list: "bullet" }],
     ],
   };
 
   const formats = [
     "bold", 
     "italic", 
-    "underline"
+    "underline",
+    "list",
+    "bullet"
   ];
 
   return (
@@ -32,6 +41,10 @@ const Editor = ({ editorContent = "", setEditorContent }) => {
         formats={formats}
         placeholder="Tulis sesuatu di sini..."
       />
+      {/* Tampilan Penghitung Kata */}
+      <div className="editor-footer" style={{ marginTop: "8px", fontSize: "12px", color: "#666", textAlign: "right" }}>
+        Jumlah Kata: <strong>{wordCount}</strong>
+      </div>
     </div>
   );
 };
