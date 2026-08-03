@@ -140,35 +140,17 @@ const DetailLaporan = () => {
         }
       `}</style>
 
-      {/* Header Navigasi */}
-      <div className="flex z-20 w-full items-center justify-between p-4 bg-red-600 text-white no-print">
-        <div className="flex items-center gap-2">
-          <FaChevronLeft className="cursor-pointer" onClick={() => navigate("/laporan-harian")} />
+      {/* Header Navigasi Sederhana */}
+      <div className="flex z-20 w-full items-center justify-between p-4 bg-red-600 text-white no-print shadow">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/laporan-harian")}>
+          <FaChevronLeft />
           <span className="ml-2 text-lg font-bold">Detail Laporan</span>
-        </div>
-        
-        {/* Tombol Aksi Cetak & Export */}
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={handlePrintOrPDF}
-            className="flex items-center gap-1 bg-white text-red-600 px-3 py-1.5 rounded text-sm font-semibold hover:bg-gray-100 transition shadow"
-            title="Cetak atau Simpan sebagai PDF"
-          >
-            <FaPrint /> Cetak / PDF
-          </button>
-          <button 
-            onClick={handleExportWord}
-            className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded text-sm font-semibold hover:bg-blue-700 transition shadow"
-            title="Download ke Microsoft Word"
-          >
-            <FaFileWord /> Export Word
-          </button>
         </div>
       </div>
 
       {/* Konten Utama (A4 Layout Look) */}
-      <div className="min-h-screen bg-gray-100 p-4 sm:p-8 flex justify-center">
-        <div className="print-container w-full max-w-3xl bg-white shadow-md rounded-lg p-8 sm:p-12 space-y-6">
+      <div className="min-h-screen bg-gray-100 p-4 sm:p-8 flex justify-center pb-24">
+        <div className="print-container w-full max-w-3xl bg-white shadow-md rounded-lg p-6 sm:p-12 space-y-6">
           {/* Judul & Tanggal */}
           <div className="space-y-2 border-b pb-4">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{data.judul}</h1>
@@ -182,9 +164,31 @@ const DetailLaporan = () => {
           />
         </div>
       </div>
+
+      {/* Floating Action Buttons (FAB) untuk Mobile & Desktop */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 no-print">
+        {/* Tombol Cetak / PDF */}
+        <button 
+          onClick={handlePrintOrPDF}
+          className="flex items-center justify-center gap-2 bg-red-600 text-white w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-3 rounded-full sm:rounded-lg shadow-lg hover:bg-red-700 transition transform hover:scale-105"
+          title="Cetak / Simpan PDF"
+        >
+          <FaPrint className="text-lg" />
+          <span className="hidden sm:inline font-semibold text-sm">Cetak / PDF</span>
+        </button>
+
+        {/* Tombol Export Word */}
+        <button 
+          onClick={handleExportWord}
+          className="flex items-center justify-center gap-2 bg-blue-600 text-white w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-3 rounded-full sm:rounded-lg shadow-lg hover:bg-blue-700 transition transform hover:scale-105"
+          title="Export ke Word"
+        >
+          <FaFileWord className="text-lg" />
+          <span className="hidden sm:inline font-semibold text-sm">Export Word</span>
+        </button>
+      </div>
     </>
   );
 };
-
 
 export default DetailLaporan;
