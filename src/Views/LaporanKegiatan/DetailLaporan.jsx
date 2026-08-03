@@ -51,12 +51,12 @@ const DetailLaporan = () => {
     year: "numeric",
   });
 
-  // Fungsi Cetak / Simpan ke PDF (Menggunakan Print Bawaan Browser ukuran A4)
+  // Fungsi Cetak / Simpan ke PDF
   const handlePrintOrPDF = () => {
     window.print();
   };
 
-  // Fungsi Export ke Microsoft Word (.doc format ukuran A4)
+  // Fungsi Export ke Microsoft Word
   const handleExportWord = () => {
     const header = `
       <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
@@ -65,7 +65,7 @@ const DetailLaporan = () => {
         <title>${data.judul}</title>
         <style>
           @page WordSection1 {
-            size: 21cm 29.7cm; /* Ukuran A4 */
+            size: 21cm 29.7cm;
             margin: 2.5cm 2cm 2.5cm 2cm;
             mso-page-orientation: portrait;
           }
@@ -118,8 +118,16 @@ const DetailLaporan = () => {
         <title>Detail Laporan - {data.judul}</title>
       </Helmet>
 
-      {/* CSS Khusus untuk cetak PDF / Print agar otomatis ukuran A4 */}
+      {/* CSS untuk Media Print & Pencegahan Teks Keluar Card */}
       <style>{`
+        /* Mengatur agar gambar, tabel, dan media di dalam konten teks tidak jebol / melebihi lebar layar */
+        .content-editor img, 
+        .content-editor table, 
+        .content-editor video {
+          max-width: 100% !important;
+          height: auto !important;
+        }
+
         @media print {
           body {
             background: white !important;
@@ -132,6 +140,7 @@ const DetailLaporan = () => {
             padding: 0 !important;
             margin: 0 !important;
             width: 100% !important;
+            max-width: 100% !important;
           }
           @page {
             size: A4;
@@ -148,26 +157,25 @@ const DetailLaporan = () => {
         </div>
       </div>
 
-      {/* Konten Utama (A4 Layout Look) */}
+      {/* Konten Utama (A4 Layout Look & Responsive Wrapping) */}
       <div className="min-h-screen bg-gray-100 p-4 sm:p-8 flex justify-center pb-24">
-        <div className="print-container w-full max-w-3xl bg-white shadow-md rounded-lg p-6 sm:p-12 space-y-6">
+        <div className="print-container w-full max-w-3xl bg-white shadow-md rounded-lg p-6 sm:p-12 space-y-6 overflow-hidden">
           {/* Judul & Tanggal */}
-          <div className="space-y-2 border-b pb-4">
+          <div className="space-y-2 border-b pb-4 break-words">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{data.judul}</h1>
             <p className="text-sm text-gray-500">{formattedDate}</p>
           </div>
 
-          {/* Isi Deskripsi Laporan */}
+          {/* Isi Deskripsi Laporan dengan kelas pelindung agar tidak keluar card */}
           <div
-            className="prose max-w-none text-gray-700 leading-relaxed"
+            className="content-editor prose max-w-none text-gray-700 leading-relaxed break-words overflow-x-auto"
             dangerouslySetInnerHTML={{ __html: safeDescription }}
           />
         </div>
       </div>
 
-      {/* Floating Action Buttons (FAB) untuk Mobile & Desktop */}
+      {/* Floating Action Buttons (FAB) */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 no-print">
-        {/* Tombol Cetak / PDF */}
         <button 
           onClick={handlePrintOrPDF}
           className="flex items-center justify-center gap-2 bg-red-600 text-white w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-3 rounded-full sm:rounded-lg shadow-lg hover:bg-red-700 transition transform hover:scale-105"
@@ -177,7 +185,6 @@ const DetailLaporan = () => {
           <span className="hidden sm:inline font-semibold text-sm">Cetak / PDF</span>
         </button>
 
-        {/* Tombol Export Word */}
         <button 
           onClick={handleExportWord}
           className="flex items-center justify-center gap-2 bg-blue-600 text-white w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-3 rounded-full sm:rounded-lg shadow-lg hover:bg-blue-700 transition transform hover:scale-105"
