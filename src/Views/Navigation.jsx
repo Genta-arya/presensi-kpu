@@ -17,12 +17,9 @@ const Navigations = ({ title }) => {
       return;
     }
 
-    // Jika bukan dari path /pegawai, gunakan logika history back bawaan react-router
-    if (window.history.length > 1 && window.history.state?.idx > 0) {
-      navigate(-1); // Ini adalah cara standar react-router-dom untuk kembali ke halaman sebelumnya
-    } else {
-      navigate("/"); // Fallback aman ke halaman utama jika tidak ada history
-    }
+    // Langsung ke /
+    navigate("/"); // Kembali ke halaman sebelumnya
+    
   };
 
   return (
