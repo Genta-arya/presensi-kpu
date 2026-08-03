@@ -1,47 +1,38 @@
 import React from "react";
-import DOMPurify from "dompurify";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css"; // Menggunakan tema snow (standar)
 
-import FroalaEditor from "react-froala-wysiwyg";
-import "froala-editor/js/plugins.pkgd.min.js";
-import "froala-editor/css/froala_editor.pkgd.min.css";
 const Editor = ({ editorContent = "", setEditorContent }) => {
   
-  const handleModelChange = (content) => {
+  // Fungsi untuk menangani perubahan teks
+  const handleChange = (content) => {
     setEditorContent(content);
   };
 
+  // Konfigurasi modul dan toolbar (hanya bold, italic, underline)
+  const modules = {
+    toolbar: [
+      ["bold", "italic", "underline"],
+    ],
+  };
+
+  const formats = [
+    "bold", 
+    "italic", 
+    "underline"
+  ];
+
   return (
-    <FroalaEditor
-      model={editorContent}
-      onModelChange={handleModelChange}
-      config={{
-        toolbarButtons: ["bold", "italic", "underline"],
-        events: {
-          "froalaEditor.initialized": function () {
-            console.log("Froala Editor initialized");
-          },
-          "froalaEditor.contentChanged": function () {
-            console.log("Content changed");
-          },
-          "froalaEditor.focus": function () {
-            console.log("Editor focused");
-          },
-          "froalaEditor.blur": function () {
-            console.log("Editor blurred");
-          },
-          // 'image.beforeUpload': function (files) {
-          //   return false; // Mencegah upload gambar
-          // },
-          // 'image.inserted': function ($img, response) {
-          //   $img.remove(); // Menghapus gambar yang sudah dimasukkan
-          // },
-        },
-        imageUpload: false,
-        imageManagerUpload: false,
-        videoUpload: false,
-        videoManagerUpload: false,
-      }}
-    />
+    <div className="editor-container">
+      <ReactQuill
+        theme="snow"
+        value={editorContent}
+        onChange={handleChange}
+        modules={modules}
+        formats={formats}
+        placeholder="Tulis sesuatu di sini..."
+      />
+    </div>
   );
 };
 
