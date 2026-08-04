@@ -1,14 +1,34 @@
 import React from "react";
 import { Clock, MapPin, PenTool, ChevronDown } from "lucide-react";
 
-// Helper fungsi untuk memformat waktu dari database secara asli tanpa tambahan zona waktu
+// Helper fungsi untuk memformat waktu dari database ke WIB secara aman
 const formatJamAsli = (timeString) => {
   if (!timeString) return "--:--";
-  return new Date(timeString).toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "UTC", // Kunci di UTC agar menampilkan jam murni dari DB tanpa digeser
+  
+  const date = new Date(timeString);
+  if (isNaN(date.getTime())) return "--:--";
+
+  // Geser milidetik ke waktu lokal WIB (+7 jam dari UTC) secara manual
+  const wibDate = new Date(date.getTime() + (7 * 60 * 60 * 1000));
+
+  return (
+    wibDate.getUTCHours().toString().padStart(2, "0") +
+    ":" +
+    wibDate.getUTCMinutes().toString().padStart(2, "0")
+  );
+};
+
+// Helper untuk format tanggal card agar konsisten dan tidak bergeser
+const formatTanggalMurni = (timeString) => {
+  if (!timeString) return "";
+  const date = new Date(timeString);
+  if (isNaN(date.getTime())) return "";
+
+  return date.toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC", // Dikunci ke UTC agar akurat dengan database
   });
 };
 
@@ -19,10 +39,10 @@ const AbsenRow = ({ absen, isExpanded, onToggle }) => {
 
   const gmapsUrl = `https://maps.google.com/maps?q=${lat},${lon}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
 
-  // --- AMBIL JAM ASLI DARI DATABASE (Bukan Acak) ---
-  // Jika kolom jam_masuk kosong, fallback ke createdAt
+  // --- AMBIL JAM & TANGGAL ASLI DARI DATABASE ---
   const jamMasuk = formatJamAsli(absen.jam_masuk || absen.createdAt);
   const jamPulang = formatJamAsli(absen.jam_keluar);
+  const tanggalCard = formatTanggalMurni(absen.jam_masuk || absen.createdAt);
 
   const statusStyles = {
     hadir: {
@@ -77,11 +97,7 @@ const AbsenRow = ({ absen, isExpanded, onToggle }) => {
             <div className="flex items-center gap-2">
               <Clock size={13} className="text-slate-400" />
               <span className="text-xs font-bold text-slate-700">
-                {new Date(absen.createdAt).toLocaleDateString("id-ID", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "short",
-                })}
+                {tanggalCard}
               </span>
             </div>
 

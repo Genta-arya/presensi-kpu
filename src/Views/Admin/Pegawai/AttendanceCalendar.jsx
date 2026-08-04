@@ -15,7 +15,7 @@ const AttendanceCalendar = ({
 }) => {
   const [calendarValue, setCalendarValue] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null); // Menyimpan format "YYYY-MM-DD"
   const [selectedStatus, setSelectedStatus] = useState("hadir");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [keterangan, setKeterangan] = useState("");
@@ -35,7 +35,7 @@ const AttendanceCalendar = ({
   // AMAN: Filter opsi agar Admin TIDAK BISA mengubah status absen menjadi cuti secara manual
   const statusOptionsForAdmin = useMemo(() => {
     return statusOptionsAll.filter(
-      (opt) => opt.value !== "cuti" && opt.value !== "cuti_luar"
+      (opt) => opt.value !== "cuti" && opt.value !== "cuti_luar",
     );
   }, []);
 
@@ -73,15 +73,36 @@ const AttendanceCalendar = ({
   };
 
   const getAttendance = (date) => {
-    const f = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-    return data.find(
-      (i) => i.jam_masuk && f(new Date(i.jam_masuk)) === f(date),
-    );
-  };
+    // 1. Format tanggal kotak kalender menjadi "YYYY-MM-DD" murni
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const calendarDateStr = `${year}-${month}-${day}`;
 
+    return data.find((i) => {
+      if (!i.jam_masuk) return false;
+
+      // 2. Buat objek Date dari jam_masuk, lalu ambil tanggal lokalnya di browser (WIB)
+      const d = new Date(i.jam_masuk);
+      const dbYear = d.getFullYear();
+      const dbMonth = String(d.getMonth() + 1).padStart(2, "0");
+      const dbDay = String(d.getDate()).padStart(2, "0");
+      const dbDateStr = `${dbYear}-${dbMonth}-${dbDay}`;
+
+      // 3. Bandingkan string tanggal lokalnya secara langsung
+      return dbDateStr === calendarDateStr;
+    });
+  };
   const handleDayClick = (date) => {
     const existingAttendance = getAttendance(date);
-    setSelectedDate(date);
+
+    // ✅ PERBAIKAN: Ekstraksi string lokal YYYY-MM-DD secara presisi tanpa geser zona waktu UTC
+    const yearVal = date.getFullYear();
+    const monthStr = String(date.getMonth() + 1).padStart(2, "0");
+    const dayStr = String(date.getDate()).padStart(2, "0");
+    const localDateString = `${yearVal}-${monthStr}-${dayStr}`;
+
+    setSelectedDate(localDateString); // Simpan string murni "YYYY-MM-DD"
     setCalendarValue(date);
     setSelectedStatus(existingAttendance ? existingAttendance.status : "hadir");
     setIsModalOpen(true);
@@ -92,7 +113,9 @@ const AttendanceCalendar = ({
 
     // Validasi double-check sisi client sebelum hit API
     if (["cuti", "cuti_luar"].includes(selectedStatus)) {
-      toast.error("Akses ditolak! Status cuti hanya bisa diubah melalui sistem modul persetujuan cuti.");
+      toast.error(
+        "Akses ditolak! Status cuti hanya bisa diubah melalui sistem modul persetujuan cuti.",
+      );
       return;
     }
 
@@ -104,7 +127,7 @@ const AttendanceCalendar = ({
         userId: userId,
         status: selectedStatus,
         keterangan,
-        tanggal: selectedDate,
+        tanggal: selectedDate, // Sudah berupa string lokal "YYYY-MM-DD" yang akurat
       });
 
       toast.success("Kehadiran berhasil diperbarui");
@@ -186,7 +209,9 @@ const AttendanceCalendar = ({
 
           return (
             <div className="flex flex-col items-center mt-1">
-              <div className={`w-2 h-2 rounded-full ${colors[res.status] || "bg-slate-400"}`} />
+              <div
+                className={`w-2 h-2 rounded-full ${colors[res.status] || "bg-slate-400"}`}
+              />
               {res.status === "hadir" && (
                 <span className="text-[8px] font-bold text-slate-500 mt-0.5 scale-90">
                   {res.jam_masuk
@@ -204,15 +229,18 @@ const AttendanceCalendar = ({
       />
       <div className="flex items-center justify-center mb-3">
         <p className="text-[10px] text-slate-400 font-medium italic">
-          * Klik pada tanggal kalender untuk menambah atau mengubah status kehadiran
+          * Klik pada tanggal kalender untuk menambah atau mengubah status
+          kehadiran
         </p>
       </div>
-      
+
       {/* Legenda Indikator Bawah (Tetap Tampilkan Legend Cuti) */}
       <div className="grid border-dashed grid-cols-2 sm:grid-cols-4 gap-2 rounded-md border-t border-slate-300 p-4 ">
         {statusOptionsAll.map((opt) => (
           <div key={opt.value} className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${colors[opt.value] || "bg-slate-400"}`} />
+            <div
+              className={`w-3 h-3 rounded-full ${colors[opt.value] || "bg-slate-400"}`}
+            />
             <span className="text-[10px] font-bold text-slate-600">
               {opt.label}
             </span>
@@ -230,12 +258,17 @@ const AttendanceCalendar = ({
                   Update Kehadiran
                 </h3>
                 <p className="text-xs text-slate-400 font-medium mt-0.5">
-                  {selectedDate?.toLocaleDateString("id-ID", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                  {selectedDate
+                    ? new Date(selectedDate + "T00:00:00").toLocaleDateString(
+                        "id-ID",
+                        {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        },
+                      )
+                    : ""}
                 </p>
               </div>
               <button
