@@ -49,16 +49,21 @@ const AttendanceCalendar = ({
   };
 
   // HELPER FORMAT JAM (24 Jam murni tanpa geseran zona waktu browser)
+// HELPER FORMAT JAM (Menyesuaikan ke WIB secara manual agar sinkron dengan database)
   const formatJam = (timeString) => {
     if (!timeString) return "--:--";
-    return new Date(timeString).toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-      timeZone: "UTC", // Kunci di UTC agar menampilkan jam murni dari DB
-    });
-  };
+    const date = new Date(timeString);
+    if (isNaN(date.getTime())) return "--:--";
 
+    // Geser milidetik ke waktu lokal WIB (+7 jam dari UTC)
+    const wibDate = new Date(date.getTime() + (7 * 60 * 60 * 1000));
+
+    return (
+      wibDate.getUTCHours().toString().padStart(2, "0") +
+      ":" +
+      wibDate.getUTCMinutes().toString().padStart(2, "0")
+    );
+  };
   // WARNA STATUS
   const getStatusColor = (status) => {
     switch (status) {
