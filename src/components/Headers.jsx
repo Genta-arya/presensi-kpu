@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useUserContext } from "../State/useContext";
 import { FiLogOut } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { CalendarCheck, LogOut } from "lucide-react";
+import { CalendarCheck, LogOut, CheckCircle2, Info } from "lucide-react";
 import { JABATAN_LABELS } from "../Constants/Constants";
 import useCheckLogin from "../State/useLogin";
 
@@ -11,22 +11,16 @@ const HeaderSkeleton = () => {
   return (
     <div className="bg-white border-b-[6px] border-gray-200 shadow-[0_12px_30px_-15px_rgba(0,0,0,0.08)] pt-4 pb-4 rounded-b-[28px] animate-pulse">
       <div className="mx-auto px-5">
-        {/* Baris Utama Skeleton */}
         <div className="flex items-start justify-between w-full gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            {/* Avatar Skeleton */}
             <div className="w-12 h-12 flex-shrink-0 rounded-full bg-gray-200 border-2 border-white mt-0.5" />
-            {/* Info Text Skeleton */}
             <div className="flex flex-col min-w-0 flex-1 pt-0.5 space-y-2">
               <div className="w-32 h-4 bg-gray-200 rounded-md" />
               <div className="w-20 h-3.5 bg-gray-100 rounded-md mt-1" />
             </div>
           </div>
-          {/* Tombol Keluar Skeleton */}
           <div className="w-16 h-6 bg-gray-100 rounded-lg pt-1" />
         </div>
-
-        {/* Action Panel Skeleton */}
         <div className="grid grid-cols-2 gap-3 mt-4">
           <div className="bg-gray-100 h-9 rounded-xl" />
           <div className="bg-gray-100 h-9 rounded-xl" />
@@ -43,15 +37,12 @@ const Headers = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Trigger V2 aktif setelah melewati tinggi header default (sekitar 140px)
       setIsScrolled(window.scrollY > 140);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // --- PERBAIKAN DI SINI ---
-  // Jika user belum termuat atau null, tampilkan kerangka skeleton
   if (!user) return <HeaderSkeleton />;
 
   const handleLogout = () => {
@@ -60,9 +51,26 @@ const Headers = () => {
     navigate("/login");
   };
 
-  // Ekstrak teks nama jabatan secara aman agar tidak me-render objek mentah
   const namaJabatan =
     user?.jabatan?.nama || user?.jabatan?.nama_jabatan || "Pegawai";
+
+  // --- LOGIKA PENGECEKAN JAM & STATUS ABSENSI ---
+  const serverDate = user?.today ? new Date(user.today) : new Date();
+  const hours = serverDate.getHours();
+  const minutes = serverDate.getMinutes();
+
+  // 1. Ambil status absen hari ini dari response database
+  const absenHariIni = user?.Absens?.[0] || null;
+  const sudahAbsenMasuk = Boolean(absenHariIni && absenHariIni.jam_masuk);
+  const sudahAbsenPulang = Boolean(absenHariIni && absenHariIni.jam_keluar);
+
+  // 2. Cek apakah waktu server sudah memenuhi syarat buka tombol
+  const isWaktuMasukBuka = hours > 7 || (hours === 7 && minutes >= 30);
+  const isWaktuPulangBuka = hours >= 16;
+
+  // 3. Penentuan aktif/tidaknya tombol
+  const canClickMasuk = isWaktuMasukBuka && !sudahAbsenMasuk;
+  const canClickPulang = isWaktuPulangBuka && sudahAbsenMasuk && !sudahAbsenPulang;
 
   return (
     <>
@@ -70,7 +78,6 @@ const Headers = () => {
       {/* VERSI 1: HEADER UTAMA (Normal di Atas Halaman)            */}
       {/* ========================================================= */}
       <div className="bg-white border-b-[6px] border-red-500 shadow-[0_12px_30px_-15px_rgba(0,0,0,0.08)] relative overflow-hidden pt-4 pb-4 rounded-b-[28px]">
-        {/* Efek dekoratif latar belakang */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-b from-red-500/5 to-transparent rounded-full blur-2xl pointer-events-none" />
 
         <div className="mx-auto px-5">
@@ -115,24 +122,83 @@ const Headers = () => {
 
           {/* Floating Action Panel V1 */}
           <div className="grid grid-cols-2 gap-3 mt-4">
+            {/* Tombol Absen Masuk V1 */}
             <button
+              disabled={!canClickMasuk}
               onClick={() => navigate(`/absensi/` + user?.id)}
-              className="flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 py-2.5 rounded-xl text-xs font-black shadow-sm hover:bg-emerald-100 transition-all"
+              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black shadow-sm transition-all ${
+                canClickMasuk
+                  ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer"
+                  : sudahAbsenMasuk
+                    ? "bg-emerald-100/60 text-emerald-800/60 border border-emerald-200/50 cursor-not-allowed"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+              }`}
             >
-              <CalendarCheck size={16} /> Masuk
+              {sudahAbsenMasuk ? (
+                <>
+                  <CheckCircle2 size={16} className="text-emerald-600" />
+                  <span>Sudah Masuk</span>
+                </>
+              ) : (
+                <>
+                  <CalendarCheck size={16} />
+                  <span>
+                    Masuk {hours < 7 || (hours === 7 && minutes < 30) ? "(07:30)" : ""}
+                  </span>
+                </>
+              )}
             </button>
+
+            {/* Tombol Absen Pulang V1 */}
             <button
+              disabled={!canClickPulang}
               onClick={() => navigate("/data/absen-pulang")}
-              className="flex items-center justify-center gap-2 bg-rose-50 text-rose-700 py-2.5 rounded-xl text-xs font-black shadow-sm hover:bg-rose-100 transition-all"
+              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black shadow-sm transition-all ${
+                canClickPulang
+                  ? "bg-rose-50 text-rose-700 hover:bg-rose-100 cursor-pointer"
+                  : sudahAbsenPulang
+                    ? "bg-rose-100/60 text-rose-800/60 border border-rose-200/50 cursor-not-allowed"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+              }`}
             >
-              <LogOut size={16} /> Pulang
+              {sudahAbsenPulang ? (
+                <>
+                  <CheckCircle2 size={16} className="text-rose-600" />
+                  <span>Sudah Pulang</span>
+                </>
+              ) : (
+                <>
+                  <LogOut size={16} />
+                  <span>
+                    Pulang {!sudahAbsenMasuk ? "(Belum Masuk)" : hours < 16 ? "(16:00)" : ""}
+                  </span>
+                </>
+              )}
             </button>
           </div>
+
+          {/* --- KETERANGAN STATUS PRESENSI HARI INI (V1) --- */}
+          {(sudahAbsenMasuk || sudahAbsenPulang) && (
+            <div
+              className={`mt-2.5 px-3 py-2 rounded-xl border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all ${
+                sudahAbsenPulang
+                  ? "bg-emerald-50/80 border-emerald-200/60 text-emerald-700"
+                  : "bg-blue-50/80 border-blue-200/60 text-blue-700"
+              }`}
+            >
+              <Info size={14} className="flex-shrink-0" />
+              <span>
+                {sudahAbsenPulang
+                  ? "Anda sudah menyelesaikan presensi masuk & pulang hari ini."
+                  : "Anda sudah melakukan presensi masuk hari ini."}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* ========================================================= */}
-      {/* VERSI 2: FIXED STICKY HEADER (Lengkap dengan Jabatan & Absen) */}
+      {/* VERSI 2: FIXED STICKY HEADER                              */}
       {/* ========================================================= */}
       <div
         className={`fixed top-0 left-0 right-0 z-50 bg-white border-b-4 border-red-500 shadow-md pt-3 pb-3 rounded-b-2xl transition-all duration-300 ease-in-out transform ${
@@ -141,7 +207,7 @@ const Headers = () => {
             : "-translate-y-full opacity-0 pointer-events-none"
         }`}
       >
-        <div className=" mx-auto px-5 space-y-3">
+        <div className="mx-auto px-5 space-y-3">
           {/* BARIS UTAMA V2 */}
           <div className="flex items-center justify-between w-full gap-3">
             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -178,19 +244,72 @@ const Headers = () => {
 
           {/* BARIS TOMBOL ABSEN V2 */}
           <div className="grid grid-cols-2 gap-2">
+            {/* Tombol Absen Masuk V2 */}
             <button
+              disabled={!canClickMasuk}
               onClick={() => navigate(`/absensi/` + user?.id)}
-              className="flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-700 py-1.5 rounded-lg text-[11px] font-black shadow-sm hover:bg-emerald-100 transition-all"
+              className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-black shadow-sm transition-all ${
+                canClickMasuk
+                  ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer"
+                  : sudahAbsenMasuk
+                    ? "bg-emerald-100/60 text-emerald-800/60 border border-emerald-200/50 cursor-not-allowed"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+              }`}
             >
-              <CalendarCheck size={14} /> Masuk
+              {sudahAbsenMasuk ? (
+                <>
+                  <CheckCircle2 size={14} className="text-emerald-600" />
+                  <span>Masuk (Selesai)</span>
+                </>
+              ) : (
+                <>
+                  <CalendarCheck size={14} /> Masuk
+                </>
+              )}
             </button>
+
+            {/* Tombol Absen Pulang V2 */}
             <button
+              disabled={!canClickPulang}
               onClick={() => navigate("/data/absen-pulang")}
-              className="flex items-center justify-center gap-1.5 bg-rose-50 text-rose-700 py-1.5 rounded-lg text-[11px] font-black shadow-sm hover:bg-rose-100 transition-all"
+              className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-black shadow-sm transition-all ${
+                canClickPulang
+                  ? "bg-rose-50 text-rose-700 hover:bg-rose-100 cursor-pointer"
+                  : sudahAbsenPulang
+                    ? "bg-rose-100/60 text-rose-800/60 border border-rose-200/50 cursor-not-allowed"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+              }`}
             >
-              <LogOut size={14} /> Pulang
+              {sudahAbsenPulang ? (
+                <>
+                  <CheckCircle2 size={14} className="text-rose-600" />
+                  <span>Pulang (Selesai)</span>
+                </>
+              ) : (
+                <>
+                  <LogOut size={14} /> Pulang
+                </>
+              )}
             </button>
           </div>
+
+          {/* --- KETERANGAN STATUS PRESENSI HARI INI (V2) --- */}
+          {(sudahAbsenMasuk || sudahAbsenPulang) && (
+            <div
+              className={`px-2.5 py-1.5 rounded-lg border flex items-center justify-center gap-1 text-[10px] font-bold transition-all ${
+                sudahAbsenPulang
+                  ? "bg-emerald-50/80 border-emerald-200/60 text-emerald-700"
+                  : "bg-blue-50/80 border-blue-200/60 text-blue-700"
+              }`}
+            >
+              <Info size={13} className="flex-shrink-0" />
+              <span className="truncate">
+                {sudahAbsenPulang
+                  ? "Presensi masuk & pulang hari ini sudah selesai."
+                  : "Presensi masuk hari ini sudah selesai."}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </>

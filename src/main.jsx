@@ -10,7 +10,7 @@ createRoot(document.getElementById("root")).render(
   <>
     <HelmetProvider>
       <App />
-      <Toaster richColors position="top-center" duration={6000} closeButton />
+      <Toaster richColors position="bottom-center" duration={6000} closeButton />
     </HelmetProvider>
   </>,
 );

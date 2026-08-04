@@ -11,6 +11,17 @@ export const createAbsen = async (data) => {
   }
 };
 
+export const updateAbsenPulang = async (data) => {
+  try {
+    const response = await axiosInstance.post("/absen/pulang", {
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getAllAbsensi = async ({ status, month, year }) => {
   try {
     const response = await axiosInstance.get("/absen", {

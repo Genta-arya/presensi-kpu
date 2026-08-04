@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import Navigations from "../Navigation";
 import useCheckLogin from "../../State/useLogin";
-import logo from "../../assets/logo.png";
 import {
   User,
   CreditCard,
@@ -13,7 +12,9 @@ import {
   ImagePlus,
   Phone,
   Mail,
-  Network, // Icon tambahan untuk Struktur Unit
+  Network,
+  X,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -26,28 +27,52 @@ import { createReportData } from "../../service/ReportData/ReportData.services";
 import Loading from "../../components/Loading";
 import { Helmet } from "react-helmet-async";
 
+// --- IMPORT LIBRARY & CSS REACT-IMAGE-CROP ---
+import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+
+// Helper untuk membuat crop awal pas di tengah lingkaran
+function centerAspectCrop(mediaWidth, mediaHeight, aspect) {
+  return centerCrop(
+    makeAspectCrop(
+      {
+        unit: "%",
+        width: 90,
+      },
+      aspect,
+      mediaWidth,
+      mediaHeight,
+    ),
+    mediaWidth,
+    mediaHeight,
+  );
+}
 
 const Profil = () => {
   const { user, setUser } = useCheckLogin();
   const [loading, setLoading] = useState(false);
-  // EDIT MODE
   const [isEdit, setIsEdit] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [catatan, setCatatan] = useState("");
   const firstInputRef = useRef(null);
 
+  // --- STATE UNTUK LIBRARY REACT-IMAGE-CROP ---
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [imgSrc, setImgSrc] = useState("");
+  const [crop, setCrop] = useState();
+  const [completedCrop, setCompletedCrop] = useState(null);
+  const imgRef = useRef(null);
+  const canvasRef = useRef(null);
+
   useEffect(() => {
-    // auto scroll ke atas
     window.scrollTo(0, 0);
   }, []);
 
-  // DATA FORM
   const [avatar, setAvatar] = useState(
     "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
   );
 
-  // DATA FORM - Pembaruan field sesuai JSON terbaru
   const [formData, setFormData] = useState({
     name: "",
     nip: "",
@@ -57,7 +82,7 @@ const Profil = () => {
     npwp: "",
     email: "",
     noHp: "",
-    strukturUnit: [], // Tambahkan ini untuk menampung array unit kerja
+    strukturUnit: [],
   });
 
   const handleSendReport = async () => {
@@ -81,7 +106,6 @@ const Profil = () => {
     }
   };
 
-  // LOAD USER - Update pemetaan data dari JSON response
   useEffect(() => {
     if (user) {
       setFormData({
@@ -97,13 +121,12 @@ const Profil = () => {
         npwp: user?.npwp || "-",
         email: user?.email || "-",
         noHp: user?.noHp || "-",
-        strukturUnit: user?.strukturUnit || [], // Ambil array strukturUnit dari user
+        strukturUnit: user?.strukturUnit || [],
       });
       setAvatar(user?.avatar || "https://i.pravatar.cc/300");
     }
   }, [user]);
 
-  // HANDLE INPUT
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -111,7 +134,6 @@ const Profil = () => {
     });
   };
 
-  // MODE EDIT
   const handleEdit = () => {
     setIsEdit(true);
     setTimeout(() => {
@@ -119,7 +141,6 @@ const Profil = () => {
     }, 100);
   };
 
-  // SIMPAN
   const handleSave = async () => {
     try {
       if (!validateForm()) return;
@@ -145,7 +166,8 @@ const Profil = () => {
     }
   };
 
-  const handleUpdatePhoto = async (e) => {
+  // 1. PILIH FILE GAMBAR
+  const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -156,43 +178,108 @@ const Profil = () => {
       return;
     }
 
-    const maxSizeInBytes = 2 * 1024 * 1024;
-    if (file.size > maxSizeInBytes) {
-      toast.error(
-        "Ukuran file terlalu besar! Maksimal batas ukuran adalah 2MB.",
-      );
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Ukuran file terlalu besar! Maksimal 5MB.");
       e.target.value = "";
       return;
     }
 
-    setIsUploading(true);
-    const toastId = toast.loading("Sedang mengunggah foto profil...");
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImgSrc(reader.result);
+      setIsCropModalOpen(true);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
 
-    try {
-      const uploadCloud = await UploadImage(file);
-      if (!uploadCloud || !uploadCloud.file_url) {
-        throw new Error("Gagal mendapatkan URL gambar dari server.");
-      }
+  // 2. SAAT GAMBAR DIMUAT DI MODAL CROP
+  const onImageLoad = (e) => {
+    const { width, height } = e.currentTarget;
+    // Set aspect ratio 1:1 (kotak/lingkaran sempurna)
+    const initialCrop = centerAspectCrop(width, height, 1);
+    setCrop(initialCrop);
+  };
 
-      const img_url = uploadCloud.file_url;
-      if (!user?.id) {
-        throw new Error("Sesi pengguna tidak valid.");
-      }
+  // 3. PROSES PEMOTONGAN MENGGUNAKAN CANVAS & LIBRARY
+  const handleCropAndUpload = async () => {
+    const image = imgRef.current;
+    const canvas = canvasRef.current;
+    if (!image || !canvas || !completedCrop) return;
 
-      const response = await updateAvatar(user.id, { avatarUrl: img_url });
-      if (response?.status === false || response?.data?.status === "error") {
-        throw new Error(response?.message || "Gagal memperbarui database.");
-      }
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
 
-      setAvatar(img_url);
-      toast.success("Foto profil berhasil diperbarui!", { id: toastId });
-    } catch (error) {
-      console.error("Error Update Avatar:", error);
-      toast.error(`Gagal perbarui foto: ${error.message}`, { id: toastId });
-    } finally {
-      setIsUploading(false);
-      e.target.value = "";
-    }
+    const ctx = canvas.getContext("2d");
+    const pixelRatio = window.devicePixelRatio || 1;
+
+    canvas.width = completedCrop.width * scaleX * pixelRatio;
+    canvas.height = completedCrop.height * scaleY * pixelRatio;
+
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+
+    const cropX = completedCrop.x * scaleX;
+    const cropY = completedCrop.y * scaleY;
+    const centerX = image.naturalWidth / 2;
+    const centerY = image.naturalHeight / 2;
+
+    ctx.save();
+    ctx.translate(-cropX, -cropY);
+    ctx.drawImage(
+      image,
+      0,
+      0,
+      image.naturalWidth,
+      image.naturalHeight,
+      0,
+      0,
+      image.naturalWidth,
+      image.naturalHeight,
+    );
+    ctx.restore();
+
+    // Konversi hasil canvas ke File Blob
+    canvas.toBlob(
+      async (blob) => {
+        if (!blob) {
+          toast.error("Gagal memproses gambar!");
+          return;
+        }
+
+        const croppedFile = new File([blob], "avatar_cropped.jpg", {
+          type: "image/jpeg",
+        });
+
+        setIsCropModalOpen(false);
+        setIsUploading(true);
+        const toastId = toast.loading("Sedang mengunggah foto profil...");
+
+        try {
+          const uploadCloud = await UploadImage(croppedFile);
+          if (!uploadCloud || !uploadCloud.file_url) {
+            throw new Error("Gagal mendapatkan URL gambar dari server.");
+          }
+
+          const img_url = uploadCloud.file_url;
+          const response = await updateAvatar(user.id, { avatarUrl: img_url });
+          if (response?.status === false || response?.data?.status === "error") {
+            throw new Error(response?.message || "Gagal memperbarui database.");
+          }
+
+          setAvatar(img_url);
+          setUser({ ...user, avatar: img_url });
+          toast.success("Foto profil berhasil diperbarui!", { id: toastId });
+        } catch (error) {
+          console.error("Error Update Avatar:", error);
+          toast.error(`Gagal perbarui foto: ${error.message}`, { id: toastId });
+        } finally {
+          setIsUploading(false);
+        }
+      },
+      "image/jpeg",
+      0.95,
+    );
   };
 
   const validateForm = () => {
@@ -201,7 +288,6 @@ const Profil = () => {
       toast.error("Format email tidak valid!");
       return false;
     }
-
     const phoneRegex = /^\d+$/;
     if (
       !phoneRegex.test(formData.noHp) ||
@@ -213,22 +299,11 @@ const Profil = () => {
       );
       return false;
     }
-
     return true;
   };
 
-  // STYLE CARD FORM
   const formCardStyle = `
-    bg-gray-50
-    p-5
-    rounded-2xl
-    border
-    border-gray-100
-    transition-all
-    duration-200
-    focus-within:border-red-500
-    focus-within:ring-4
-    focus-within:ring-red-100
+    bg-gray-50 p-5 rounded-2xl w-full border border-gray-100 transition-all duration-200 focus-within:border-red-500 focus-within:ring-4 focus-within:ring-red-100
   `;
 
   if (loading || !user) {
@@ -241,7 +316,6 @@ const Profil = () => {
       <Helmet>
         <title>Profil</title>
       </Helmet>
-     
 
       <div className="min-h-screen bg-gray-100 pt-20 px-4 pb-10">
         <div className="max-w-5xl mx-auto">
@@ -256,7 +330,7 @@ const Profil = () => {
                     className="w-40 h-40 rounded-full border-4 object-center border-white object-cover shadow-2xl"
                   />
 
-                  {/* UPDATE FOTO */}
+                  {/* TOMBOL UPLOAD */}
                   <label className="absolute bottom-2 right-2 bg-red-600 hover:bg-red-700 transition p-3 rounded-full cursor-pointer shadow-lg">
                     <ImagePlus size={20} color="white" />
                     <input
@@ -264,25 +338,19 @@ const Profil = () => {
                       accept=".jpg,.jpeg,.png"
                       disabled={isUploading}
                       className="hidden"
-                      onChange={handleUpdatePhoto}
+                      onChange={handleFileSelect}
                     />
                   </label>
                 </div>
               </div>
             </div>
 
-            {/* CONTENT */}
+            {/* CONTENT FORM */}
             <div className="pt-26 p-6">
-              {/* TOP INFO */}
-            
-
-              {/* FORM GRID */}
               <div className="grid md:grid-cols-2 gap-5">
-                {/* NAMA */}
                 <div className={formCardStyle}>
                   <label className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                    <User size={18} />
-                    Nama Lengkap
+                    <User size={18} /> Nama Lengkap
                   </label>
                   {isEdit ? (
                     <input
@@ -300,11 +368,9 @@ const Profil = () => {
                   )}
                 </div>
 
-                {/* NIP */}
                 <div className={formCardStyle}>
                   <label className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                    <CreditCard size={18} />
-                    NIP
+                    <CreditCard size={18} /> NIP
                   </label>
                   {isEdit ? (
                     <input
@@ -321,38 +387,28 @@ const Profil = () => {
                   )}
                 </div>
 
-                {/* JABATAN */}
                 <div className={formCardStyle}>
                   <label className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                    <Briefcase size={18} />
-                    Jabatan
+                    <Briefcase size={18} /> Jabatan
                   </label>
                   <p className="text-sm font-semibold text-gray-800">
                     {formData.jabatan}
                   </p>
                 </div>
 
-                {/* STRUKTUR UNIT / UNIT KERJA (FIELD BARU) */}
                 <div className={`${formCardStyle} md:col-span-2`}>
                   <label className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                    <Network size={18} />
-                    Unit Kerja & Posisi
+                    <Network size={18} /> Unit Kerja & Posisi
                   </label>
                   {formData.strukturUnit && formData.strukturUnit.length > 0 ? (
                     <div className="flex flex-col gap-2">
                       {formData.strukturUnit.map((item, index) => (
-                        <div
-                          key={item.id || index}
-                          className="text-sm text-gray-800"
-                        >
+                        <div key={item.id || index} className="text-sm text-gray-800">
                           <span className="font-bold text-red-600">
                             [{item.posisi || "STAFF"}]
                           </span>{" "}
                           <span className="font-semibold">
                             {item.unitKerja?.nama || "-"}
-                          </span>
-                          <span className="text-xs text-gray-400 block mt-0.5">
-                            Kode Unit: {item.unitKerja?.kode || "-"}
                           </span>
                         </div>
                       ))}
@@ -362,17 +418,14 @@ const Profil = () => {
                   )}
                 </div>
 
-                {/* EMAIL */}
                 <div className={formCardStyle}>
                   <label className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                    <Mail size={18} />
-                    Email
+                    <Mail size={18} /> Email
                   </label>
                   {isEdit ? (
                     <input
                       type="email"
                       name="email"
-                      required
                       value={formData.email}
                       onChange={handleChange}
                       className="w-full bg-transparent border-b-2 outline-none text-sm font-semibold text-gray-800"
@@ -384,11 +437,9 @@ const Profil = () => {
                   )}
                 </div>
 
-                {/* NPWP */}
                 <div className={formCardStyle}>
                   <label className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                    <FileText size={18} />
-                    NPWP
+                    <FileText size={18} /> NPWP
                   </label>
                   {isEdit ? (
                     <input
@@ -399,17 +450,15 @@ const Profil = () => {
                       className="w-full bg-transparent border-b-2 outline-none text-sm font-semibold text-gray-800"
                     />
                   ) : (
-                    <p className="text-sm font-semibold text-gray-800 break-words">
+                    <p className="text-sm font-semibold text-gray-800">
                       {formData.npwp}
                     </p>
                   )}
                 </div>
 
-                {/* NO HP / WHATSAPP */}
                 <div className={formCardStyle}>
                   <label className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                    <Phone size={18} />
-                    No. HP / WhatsApp
+                    <Phone size={18} /> No. HP / WhatsApp
                   </label>
                   {isEdit ? (
                     <input
@@ -429,25 +478,12 @@ const Profil = () => {
                   )}
                 </div>
 
-                {/* GOLONGAN */}
                 <div className={formCardStyle}>
                   <label className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                    <FileText size={18} />
-                    Golongan
+                    <FileText size={18} /> Golongan
                   </label>
                   <p className="text-sm font-semibold text-gray-800">
                     {formData.golongan}
-                  </p>
-                </div>
-
-                {/* GAJI */}
-                <div className={formCardStyle}>
-                  <label className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-                    <BadgeDollarSign size={18} />
-                    Gaji
-                  </label>
-                  <p className="text-sm font-semibold text-gray-800">
-                    {formData.gaji || "-"}
                   </p>
                 </div>
               </div>
@@ -458,16 +494,15 @@ const Profil = () => {
               {!isEdit ? (
                 <button
                   onClick={handleEdit}
-                  className="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-2xl transition shadow-lg font-semibold"
+                  className="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-2xl transition shadow-lg font-semibold cursor-pointer"
                 >
-                  <Pencil size={18} />
-                  Ubah Profil
+                  <Pencil size={18} /> Ubah Profil
                 </button>
               ) : (
                 <button
                   onClick={handleSave}
                   disabled={loading}
-                  className="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-2xl transition shadow-lg font-semibold"
+                  className="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-2xl transition shadow-lg font-semibold cursor-pointer"
                 >
                   {loading ? (
                     <div className="animate-spin">
@@ -475,54 +510,86 @@ const Profil = () => {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <Save size={18} />
-                      <p>Simpan Profil</p>
+                      <Save size={18} /> <p>Simpan Profil</p>
                     </div>
                   )}
                 </button>
               )}
-
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="text-gray-500 hover:text-red-600 underline text-center"
-              >
-                Laporkan kesalahan data
-              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* MODAL LAPOR */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-          <div className="bg-white p-6 rounded-3xl w-full max-w-md shadow-2xl">
-            <h2 className="text-lg font-bold mb-4 text-gray-800">
-              Laporkan Kesalahan
-            </h2>
-            <textarea
-              value={catatan}
-              onChange={(e) => setCatatan(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl p-3 mb-4 h-32 focus:ring-2 focus:ring-red-500 outline-none"
-              placeholder="Tuliskan detail kesalahan data Anda di sini..."
-            />
-            <div className="flex gap-2">
+      {/* ========================================================= */}
+      {/* MODAL CROP MENGGUNAKAN LIBRARY REACT-IMAGE-CROP            */}
+      {/* ========================================================= */}
+      {isCropModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+          <div className="bg-white p-6 rounded-3xl w-full max-w-lg shadow-2xl flex flex-col items-center">
+            <div className="flex items-center justify-between w-full mb-3">
+              <h3 className="text-base font-bold text-gray-800">
+                Pangkas & Sesuaikan Foto
+              </h3>
               <button
-                onClick={() => setIsModalOpen(false)}
-                className="flex-1 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 transition"
+                onClick={() => setIsCropModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-full cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mb-4 text-center">
+              Seret kotak untuk mengatur bagian foto yang ingin dijadikan profil.
+            </p>
+
+            {/* KOTAK AREA CROP */}
+            <div className="max-h-[60vh] overflow-auto flex justify-center w-full bg-gray-900 rounded-2xl p-2">
+              {imgSrc && (
+                <ReactCrop
+                  crop={crop}
+                  onChange={(c) => setCrop(c)}
+                  onComplete={(c) => setCompletedCrop(c)}
+                  aspect={1}
+                  circularCrop
+                >
+                  <img
+                    ref={imgRef}
+                    src={imgSrc}
+                    alt="Upload Crop"
+                    onLoad={onImageLoad}
+                    style={{ maxHeight: "50vh", display: "block" }}
+                  />
+                </ReactCrop>
+              )}
+            </div>
+
+            {/* TOMBOL AKSI */}
+            <div className="flex gap-3 w-full mt-6">
+              <button
+                onClick={() => setIsCropModalOpen(false)}
+                className="flex-1 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs transition cursor-pointer"
               >
                 Batal
               </button>
               <button
-                onClick={handleSendReport}
-                className="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white transition"
+                onClick={handleCropAndUpload}
+                disabled={isUploading}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-xs transition shadow-md cursor-pointer"
               >
-                Kirim Laporan
+                {isUploading ? (
+                  <CgSpinner size={16} className="animate-spin" />
+                ) : (
+                  <>
+                    <Check size={16} />
+                    <span>Potong & Unggah</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      <canvas ref={canvasRef} className="hidden" />
     </>
   );
 };

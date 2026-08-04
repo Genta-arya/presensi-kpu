@@ -23,12 +23,27 @@ const LoginPage = () => {
   const [nip, setNip] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberNip, setRememberNip] = useState(false);
   const [otp, setOtp] = useState(Array(6).fill(""));
   const otpRef = useRef([]);
+  const passwordRef = useRef(null); // <--- 1. Tambahkan ref untuk input password
   const [userId, setUserId] = useState(null);
   const [showOtp, setShowOtp] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // --- CEK LOCALSTORAGE UNTUK NIP & OTOMATIS FOKUS KE PASSWORD ---
+  useEffect(() => {
+    const savedNip = localStorage.getItem("saved_nip");
+    if (savedNip) {
+      setNip(savedNip);
+      setRememberNip(true);
+      // Jika NIP ada, arahkan kursor langsung ke input password biar satset
+      setTimeout(() => {
+        passwordRef.current?.focus();
+      }, 100);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,6 +51,14 @@ const LoginPage = () => {
 
     try {
       setLoading(true);
+
+      // --- LOGIKA SIMPAN / HAPUS NIP DI LOCALSTORAGE ---
+      if (rememberNip) {
+        localStorage.setItem("saved_nip", nip);
+      } else {
+        localStorage.removeItem("saved_nip");
+      }
+
       const res = await HandleLoginPage({ nip, security: password });
 
       if (res.data?.mfa === "setup") {
@@ -114,14 +137,14 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+
   const handlePaste = (e) => {
     e.preventDefault();
     const data = e.clipboardData.getData("text").trim();
 
-    // Pastikan yang di-copas adalah angka dan panjangnya sesuai (6 digit)
     if (!/^\d+$/.test(data)) return;
 
-    const pasteData = data.split("").slice(0, 6); // Ambil 6 karakter pertama
+    const pasteData = data.split("").slice(0, 6);
     const newOtp = [...otp];
 
     pasteData.forEach((char, index) => {
@@ -131,8 +154,6 @@ const LoginPage = () => {
     });
 
     setOtp(newOtp);
-
-    // Pindahkan fokus ke input terakhir atau input setelah data yang terisi
     const lastIndex = Math.min(pasteData.length - 1, 5);
     otpRef.current[lastIndex].focus();
   };
@@ -140,6 +161,7 @@ const LoginPage = () => {
   useEffect(() => {
     if (localStorage.getItem("token")) navigate("/");
   }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0f172a] relative overflow-hidden font-sans">
       {/* Cinematic Background Elements */}
@@ -162,10 +184,10 @@ const LoginPage = () => {
 
             <div className="text-center">
               <h1 className="text-white text-2xl font-black tracking-tighter uppercase flex items-center gap-2">
-                Secure <span className="text-red-500">Gateway</span>
+                Silahkan<span className="text-red-500">Login</span>
               </h1>
               <p className="text-slate-400 text-[10px] font-bold tracking-[0.3em] uppercase mt-1">
-                Portal KPU Sekadau
+                Kepegawaian KPU Sekadau
               </p>
             </div>
           </div>
@@ -176,7 +198,7 @@ const LoginPage = () => {
               <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    NIP Access
+                    NIP (Nomor Induk Pegawai)
                   </label>
                   <FiCpu className="text-slate-500 text-sm" />
                 </div>
@@ -196,13 +218,14 @@ const LoginPage = () => {
               <div className="space-y-2">
                 <div className="flex justify-between items-center ">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    Secret Key
+                    Password
                   </label>
                   <FiLock className="text-slate-500 text-sm" />
                 </div>
                 <div className="relative group">
                   <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-red-500 transition-colors" />
                   <input
+                    ref={passwordRef} // <--- 2. Pasang ref di sini
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -223,17 +246,32 @@ const LoginPage = () => {
                 </div>
               </div>
 
+              {/* CHECKBOX SIMPAN NIP */}
+              <div className="flex items-center justify-between px-1">
+                <label className="flex items-center gap-2.5 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={rememberNip}
+                    onChange={(e) => setRememberNip(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-600 text-red-600 focus:ring-red-500/20 bg-[#0f172a]/50 cursor-pointer accent-red-600"
+                  />
+                  <span className="text-xs font-bold text-slate-400 group-hover:text-slate-300 transition-colors">
+                    Ingat NIP Saya
+                  </span>
+                </label>
+              </div>
+
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full relative overflow-hidden group bg-gradient-to-r from-red-600 to-rose-700 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-red-900/20 active:scale-[0.98] transition-all"
+                className="w-full relative overflow-hidden group bg-gradient-to-r from-red-600 to-rose-700 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-red-900/20 active:scale-[0.98] transition-all cursor-pointer"
               >
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 {loading ? (
                   <FiLoader className="animate-spin mx-auto text-xl" />
                 ) : (
-                  "Authorize Access"
+                  "Masuk"
                 )}
               </button>
 
@@ -280,7 +318,7 @@ const LoginPage = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-red-900/30 active:scale-[0.98] transition-all"
+                  className="w-full bg-red-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-red-900/30 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   {loading ? (
                     <FiLoader className="animate-spin mx-auto text-xl" />
@@ -309,7 +347,7 @@ const LoginPage = () => {
               </span>
             </div>
             <p className="text-[9px] text-slate-600 font-medium text-center">
-              INTERNAL ACCESS ONLY • KPU SEKADAU SYSTEM SECURITY
+              KPU SEKADAU SYSTEM SECURITY
               <br />
               &copy; {new Date().getFullYear()} ALL RIGHTS RESERVED
             </p>

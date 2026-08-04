@@ -409,7 +409,7 @@ const AbsenLayout = () => {
                     </p>
                     <button
                       onClick={() => {
-                        navigate("/");
+                        navigate("/data/rekap-absensi");
                         localStorage.removeItem("ttd_cache");
                       }}
                       className="bg-green-500 w-full text-white px-4 py-2 rounded-full hover:bg-green-600"

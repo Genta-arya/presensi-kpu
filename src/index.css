@@ -86,7 +86,19 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(25px);
 }
+.ql-editor ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5em !important;
+}
 
+.ql-editor ul {
+  list-style-type: disc !important;
+  padding-left: 1.5em !important;
+}
+
+.ql-editor li {
+  list-style-position: outside !important;
+}
 
 .custom-calendar .react-calendar__tile * {
   pointer-events: none !important;

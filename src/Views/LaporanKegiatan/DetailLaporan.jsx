@@ -5,14 +5,17 @@ import { toast } from "sonner";
 import useCheckLogin from "../../State/useLogin";
 import Loading from "../../components/Loading";
 import DOMPurify from "dompurify";
-import { FaChevronLeft, FaPrint, FaFileWord } from "react-icons/fa";
+import { FaChevronLeft, FaFileWord } from "react-icons/fa";
 import { Helmet } from "react-helmet-async";
+import PizZip from "pizzip";
+import Docxtemplater from "docxtemplater";
+import { saveAs } from "file-saver";
 
 const DetailLaporan = () => {
   const { id } = useParams();
   const [loading, setLoading] = React.useState(false);
   const [data, setData] = React.useState(null);
-  const { isLoading } = useCheckLogin();
+  const { user, isLoading } = useCheckLogin();
   const navigate = useNavigate();
 
   const fetchLaporanDetail = async () => {
@@ -51,65 +54,80 @@ const DetailLaporan = () => {
     year: "numeric",
   });
 
-  // Fungsi Cetak / Simpan ke PDF
-  const handlePrintOrPDF = () => {
-    window.print();
+  // Helper untuk membersihkan deskripsi agar list angka & bullet tetap rapi
+  const getCleanDescription = () => {
+    return data.deskripsi
+      ? data.deskripsi
+          .replace(/<\/(ol|ul)>/g, "\n")
+          .replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (match) => {
+            let index = 1;
+            return match.replace(
+              /<li>([\s\S]*?)<\/li>/gi,
+              () => `${index++}. $1\n`,
+            );
+          })
+          .replace(/<ul>[\s\S]*?<\/ul>/gi, (match) => {
+            return match.replace(/<li>([\s\S]*?)<\/li>/gi, "• $1\n");
+          })
+          .replace(/<li>/g, "• ")
+          .replace(/<\/li>/g, "\n")
+          .replace(/<\/p>/g, "\n")
+          .replace(/<br\s*[\/]?>/gi, "\n")
+          .replace(/<[^>]*>?/gm, "")
+          .replace(/&nbsp;/g, " ")
+          .trim()
+      : "";
   };
 
-  // Fungsi Export ke Microsoft Word
-  const handleExportWord = () => {
-    const header = `
-      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-      <head>
-        <meta charset='utf-8'>
-        <title>${data.judul}</title>
-        <style>
-          @page WordSection1 {
-            size: 21cm 29.7cm;
-            margin: 2.5cm 2cm 2.5cm 2cm;
-            mso-page-orientation: portrait;
-          }
-          div.WordSection1 {
-            page: WordSection1;
-          }
-          body {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 12pt;
-            line-height: 1.5;
-            color: #000;
-          }
-          h1 {
-            font-size: 18pt;
-            font-weight: bold;
-            margin-bottom: 5px;
-          }
-          .date {
-            font-size: 11pt;
-            color: #555;
-            margin-bottom: 20px;
-          }
-        </style>
-      </head>
-      <body>
-      <div class="WordSection1">
-    `;
-    
-    const footer = `
-      </div>
-      </body>
-      </html>
-    `;
+  // --- FUNGSI EXPORT WORD MENGGUNAKAN TEMPLATE .DOCX ---
+  const handleExportWord = async () => {
+    try {
+      const response = await fetch("/template_laporan_harian.docx");
 
-    const sourceHTML = header + `<h1>${data.judul}</h1><div class="date">${formattedDate}</div><hr/><br/>` + safeDescription + footer;
-    
-    const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
-    const fileDownload = document.createElement("a");
-    document.body.appendChild(fileDownload);
-    fileDownload.href = source;
-    fileDownload.download = `${data.judul || "Laporan"}.doc`;
-    fileDownload.click();
-    document.body.removeChild(fileDownload);
-    toast.success("Berhasil mengexport ke file Word");
+      if (!response.ok) {
+        throw new Error(
+          "File template_laporan_harian.docx tidak ditemukan di folder public.",
+        );
+      }
+
+      const templateArrayBuffer = await response.arrayBuffer();
+
+      const zip = new PizZip(templateArrayBuffer);
+      const doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+        delimiters: {
+          start: "<<",
+          end: ">>",
+        },
+      });
+
+      const subbagianNama =
+        data.user?.strukturUnit?.[0]?.unitKerja?.nama ||
+        "Teknis Penyelenggaraan Pemilu dan Hukum";
+
+      const cleanDescription = getCleanDescription();
+
+      doc.render({
+        nama: user?.name || data.user?.name || "-",
+        nip: user?.nip || data.user?.nip || "-",
+        subbag: subbagianNama,
+        tanggal: formattedDate,
+        isi: cleanDescription,
+      });
+
+      const out = doc.getZip().generate({
+        type: "blob",
+        mimeType:
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+
+      saveAs(out, `Laporan_${user?.name || "Kegiatan"}.docx`);
+      toast.success("Berhasil mengexport laporan");
+    } catch (error) {
+      console.error("Error Export Template:", error);
+      toast.error(`Gagal memproses template: ${error.message}`);
+    }
   };
 
   return (
@@ -118,55 +136,55 @@ const DetailLaporan = () => {
         <title>Detail Laporan - {data.judul}</title>
       </Helmet>
 
-      {/* CSS untuk Media Print & Pencegahan Teks Keluar Card */}
       <style>{`
-        /* Mengatur agar gambar, tabel, dan media di dalam konten teks tidak jebol / melebihi lebar layar */
+        .content-editor ol {
+          list-style-type: decimal !important;
+          padding-left: 1.5rem !important;
+          margin-top: 0.5rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .content-editor ul {
+          list-style-type: disc !important;
+          padding-left: 1.5rem !important;
+          margin-top: 0.5rem;
+          margin-bottom: 0.5rem;
+        }
+
+        .content-editor li {
+          list-style-position: outside !important;
+          margin-bottom: 0.25rem;
+        }
+
         .content-editor img, 
         .content-editor table, 
         .content-editor video {
           max-width: 100% !important;
           height: auto !important;
         }
-
-        @media print {
-          body {
-            background: white !important;
-          }
-          .no-print {
-            display: none !important;
-          }
-          .print-container {
-            box-shadow: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-          }
-          @page {
-            size: A4;
-            margin: 20mm;
-          }
-        }
       `}</style>
 
       {/* Header Navigasi Sederhana */}
-      <div className="flex z-20 w-full items-center justify-between p-4 bg-red-600 text-white no-print shadow">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/laporan-harian")}>
+      <div className="flex z-20 w-full items-center justify-between p-4 bg-red-600 text-white shadow">
+        <div
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => navigate("/laporan-harian")}
+        >
           <FaChevronLeft />
           <span className="ml-2 text-lg font-bold">Detail Laporan</span>
         </div>
       </div>
 
-      {/* Konten Utama (A4 Layout Look & Responsive Wrapping) */}
+      {/* Konten Utama */}
       <div className="min-h-screen bg-gray-100 p-4 sm:p-8 flex justify-center pb-24">
-        <div className="print-container w-full max-w-3xl bg-white shadow-md rounded-lg p-6 sm:p-12 space-y-6 overflow-hidden">
-          {/* Judul & Tanggal */}
+        <div className="w-full max-w-3xl bg-white shadow-md rounded-lg p-6 sm:p-12 space-y-6 overflow-hidden">
           <div className="space-y-2 border-b pb-4 break-words">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{data.judul}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+              {data.judul}
+            </h1>
             <p className="text-sm text-gray-500">{formattedDate}</p>
           </div>
 
-          {/* Isi Deskripsi Laporan dengan kelas pelindung agar tidak keluar card */}
           <div
             className="content-editor prose max-w-none text-gray-700 leading-relaxed break-words overflow-x-auto"
             dangerouslySetInnerHTML={{ __html: safeDescription }}
@@ -174,24 +192,17 @@ const DetailLaporan = () => {
         </div>
       </div>
 
-      {/* Floating Action Buttons (FAB) */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 no-print">
-        <button 
-          onClick={handlePrintOrPDF}
-          className="flex items-center justify-center gap-2 bg-red-600 text-white w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-3 rounded-full sm:rounded-lg shadow-lg hover:bg-red-700 transition transform hover:scale-105"
-          title="Cetak / Simpan PDF"
-        >
-          <FaPrint className="text-lg" />
-          <span className="hidden sm:inline font-semibold text-sm">Cetak / PDF</span>
-        </button>
-
-        <button 
+      {/* Floating Action Button (FAB) untuk Export Word */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+        <button
           onClick={handleExportWord}
-          className="flex items-center justify-center gap-2 bg-blue-600 text-white w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-3 rounded-full sm:rounded-lg shadow-lg hover:bg-blue-700 transition transform hover:scale-105"
-          title="Export ke Word"
+          className="flex items-center justify-center gap-2 bg-blue-600 text-white w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-3 rounded-full sm:rounded-lg shadow-lg hover:bg-blue-700 transition transform hover:scale-105 cursor-pointer"
+          title="Export ke Word (Template)"
         >
           <FaFileWord className="text-lg" />
-          <span className="hidden sm:inline font-semibold text-sm">Export Word</span>
+          <span className="hidden sm:inline font-semibold text-sm">
+            Export Word
+          </span>
         </button>
       </div>
     </>

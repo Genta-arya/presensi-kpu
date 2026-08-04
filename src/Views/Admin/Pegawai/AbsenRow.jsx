@@ -1,42 +1,29 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Clock, MapPin, PenTool, ChevronDown } from "lucide-react";
+
+// Helper fungsi untuk memformat waktu dari database secara asli tanpa tambahan zona waktu
+const formatJamAsli = (timeString) => {
+  if (!timeString) return "--:--";
+  return new Date(timeString).toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC", // Kunci di UTC agar menampilkan jam murni dari DB tanpa digeser
+  });
+};
 
 const AbsenRow = ({ absen, isExpanded, onToggle }) => {
   const [lat, lon] = absen.koordinat
     ? absen.koordinat.split(",").map((c) => c.trim())
     : ["0", "0"];
 
-  // Ganti bagian URL lama dengan format Google Maps Embed ini
   const gmapsUrl = `https://maps.google.com/maps?q=${lat},${lon}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
 
-  // --- GENERATOR JAM PULANG ACAK (16:00 - 16:30) SECARA KONSISTEN BERDASARKAN ID/TANGGAL ---
-  const jamPulangAcak = useMemo(() => {
-    // Memakai basis string ID atau Tanggal sebagai seed unik agar menit acak tidak berubah-ubah saat re-render
-    const seedString = absen.id || absen.createdAt || "KPU";
-    let hash = 0;
-    for (let i = 0; i < seedString.length; i++) {
-      hash = seedString.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const acakMenit = Math.abs(hash) % 31; // Menghasilkan angka acak antara 0 sampai 30
-    return `16:${String(acakMenit).padStart(2, "0")}`;
-  }, [absen.id, absen.createdAt]);
-  const generateConsistentTime = (seed, hourStart, minStart, minEnd) => {
-    const seedString = String(seed);
-    let hash = 0;
-    for (let i = 0; i < seedString.length; i++) {
-      hash = seedString.charCodeAt(i) + ((hash << 5) - hash);
-    }
+  // --- AMBIL JAM ASLI DARI DATABASE (Bukan Acak) ---
+  // Jika kolom jam_masuk kosong, fallback ke createdAt
+  const jamMasuk = formatJamAsli(absen.jam_masuk || absen.createdAt);
+  const jamPulang = formatJamAsli(absen.jam_keluar);
 
-    // Menghitung rentang (misal 30 - 59 = 30 menit)
-    const range = minEnd - minStart + 1;
-    const acakMenit = minStart + (Math.abs(hash) % range);
-
-    return `${String(hourStart).padStart(2, "0")}:${String(acakMenit).padStart(2, "0")}`;
-  };
-  // Format jam masuk dari database
-  const jamMasuk = useMemo(() => {
-    return generateConsistentTime(absen.id || absen.createdAt, 7, 30, 59);
-  }, [absen.id, absen.createdAt]);
   const statusStyles = {
     hadir: {
       bg: "bg-emerald-50",
@@ -98,7 +85,7 @@ const AbsenRow = ({ absen, isExpanded, onToggle }) => {
               </span>
             </div>
 
-            {/* Jam hanya muncul jika hadir */}
+            {/* Jam asli muncul sesuai database jika hadir */}
             {absen.status === "hadir" && (
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 border border-emerald-100/70 rounded-md flex items-center gap-1">
@@ -107,7 +94,7 @@ const AbsenRow = ({ absen, isExpanded, onToggle }) => {
                 </span>
                 <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 border border-blue-100/70 rounded-md flex items-center gap-1">
                   <span className="w-1 h-1 rounded-full bg-blue-500" /> Pulang:{" "}
-                  {jamPulangAcak}
+                  {jamPulang}
                 </span>
               </div>
             )}

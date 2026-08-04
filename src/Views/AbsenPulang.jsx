@@ -12,6 +12,7 @@ import Maps from "../components/Maps";
 import useCheckLogin from "../State/useLogin";
 import Loading from "../components/Loading"; // Pastikan impor komponen Loading bawaanmu
 import { Helmet } from "react-helmet-async";
+import { updateAbsenPulang } from "../service/Auth/absen.service";
 
 const AbsenPulang = () => {
   const navigate = useNavigate();
@@ -32,7 +33,6 @@ const AbsenPulang = () => {
   const [distance, setDistance] = useState(45); // Set statis di bawah 100 meter
 
   const { user, checkSession } = useCheckLogin();
-
 
   useEffect(() => {
     // Cek sesi login saat komponen pertama kali dimuat
@@ -61,18 +61,24 @@ const AbsenPulang = () => {
     sigCanvas.current.clear();
   };
 
-  const handleSavePulang = () => {
-    if (sigCanvas.current.isEmpty()) {
-      toast.error("Tanda tangan tidak boleh kosong!");
-      return;
-    }
-
-    setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
+  const handleSavePulang = async () => {
+    try {
+      const signatureData = sigCanvas.current.toDataURL("image/png");
+      if (sigCanvas.current.isEmpty()) {
+        toast.error("Tanda tangan tidak boleh kosong!");
+        return;
+      }
+      setLoading(true);
+      await updateAbsenPulang({ userId: user.id});
       setShowSuccessModal(true);
-    }, 1000);
+    } catch (error) {
+      console.error("Error saat absen pulang:", error);
+      toast.error(
+        error.response?.data?.message || "Gagal melakukan absen pulang",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   // PENGAMAN UTAMA: Jika data user dari custom hook masih null / belum selesai dimuat
@@ -197,7 +203,7 @@ const AbsenPulang = () => {
                 Selamat beristirahat, pulang ke rumah dengan aman 🎉
               </p>
               <button
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/data/rekap-absensi")}
                 className="bg-green-500 w-full text-white px-4 py-2 rounded-full hover:bg-green-600 font-semibold"
               >
                 Tutup

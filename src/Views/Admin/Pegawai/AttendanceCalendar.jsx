@@ -75,7 +75,7 @@ const AttendanceCalendar = ({
   const getAttendance = (date) => {
     const f = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
     return data.find(
-      (i) => i.createdAt && f(new Date(i.createdAt)) === f(date),
+      (i) => i.jam_masuk && f(new Date(i.jam_masuk)) === f(date),
     );
   };
 
@@ -189,8 +189,8 @@ const AttendanceCalendar = ({
               <div className={`w-2 h-2 rounded-full ${colors[res.status] || "bg-slate-400"}`} />
               {res.status === "hadir" && (
                 <span className="text-[8px] font-bold text-slate-500 mt-0.5 scale-90">
-                  {res.createdAt
-                    ? new Date(res.createdAt).toLocaleTimeString("id-ID", {
+                  {res.jam_masuk
+                    ? new Date(res.jam_masuk).toLocaleTimeString("id-ID", {
                         hour: "2-digit",
                         minute: "2-digit",
                         hour12: false,

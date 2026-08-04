@@ -23,7 +23,7 @@ const AttendanceCalendar = ({
     setSelectedYear(today.getFullYear());
   };
 
-  // CHECK ABSEN
+  // CHECK ABSEN - Cek berdasarkan createdAt atau jam_masuk
   const checkAttendance = (date) => {
     if (!date || isNaN(date.getTime())) return null;
 
@@ -33,8 +33,10 @@ const AttendanceCalendar = ({
     const currentDate = `${year}-${month}-${day}`;
 
     return data.find((item) => {
-      if (!item.createdAt) return false;
-      const d = new Date(item.createdAt);
+      // Gunakan jam_masuk jika ada, jika tidak fallback ke createdAt
+      const referenceDate = item.jam_masuk || item.createdAt;
+      if (!referenceDate) return false;
+      const d = new Date(referenceDate);
       if (isNaN(d.getTime())) return false;
 
       const itemYear = d.getFullYear();
@@ -43,6 +45,17 @@ const AttendanceCalendar = ({
       const itemDate = `${itemYear}-${itemMonth}-${itemDay}`;
 
       return itemDate === currentDate;
+    });
+  };
+
+  // HELPER FORMAT JAM (24 Jam murni tanpa geseran zona waktu browser)
+  const formatJam = (timeString) => {
+    if (!timeString) return "--:--";
+    return new Date(timeString).toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "UTC", // Kunci di UTC agar menampilkan jam murni dari DB
     });
   };
 
@@ -70,11 +83,10 @@ const AttendanceCalendar = ({
 
   return (
     <>
-      <div className="bg-white rounded-[32px] shadow-2xl p-6 mt-6 border border-gray-100 ">
+      <div className="bg-white rounded-[32px] shadow-2xl p-6 mt-6 border border-gray-100">
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            {/* Diubah dari text-sm menjadi text-xs */}
             <h2 className="text-xs font-black text-gray-800">
               Kalender Kehadiran
             </h2>
@@ -86,7 +98,6 @@ const AttendanceCalendar = ({
           <div className="flex items-center gap-3">
             <button
               onClick={handleResetCalendar}
-             
               className="flex items-center gap-2 bg-gray-100 hover:bg-red-600 hover:text-white transition-all duration-200 px-4 py-2.5 rounded-xl font-semibold text-gray-700 text-xs"
             >
               <RotateCcw size={14} />
@@ -109,7 +120,7 @@ const AttendanceCalendar = ({
             if (view === "month") {
               const day = date.getDay();
               if (day === 0 || day === 6) {
-                return "text-holiday-red font-medium"; 
+                return "text-holiday-red font-medium";
               }
             }
             return "";
@@ -120,16 +131,23 @@ const AttendanceCalendar = ({
 
               if (attendance) {
                 return (
-                  <div className="flex justify-center mt-1">
+                  <div className="flex flex-col items-center justify-center mt-1 space-y-0.5">
+                    {/* INDIKATOR TITIK WARNA STATUS */}
                     <div
-                      className={`
-                        w-2.5
-                        h-2.5
-                        rounded-full
-                        shadow-md
-                        ${getStatusColor(attendance.status)}
-                      `}
+                      className={`w-2 h-2 rounded-full shadow-md ${getStatusColor(attendance.status)}`}
                     />
+
+                    {/* TAMPILKAN JAM MASUK & PULANG HANYA JIKA STATUS HADIR */}
+                    {attendance.status === "hadir" && (
+                      <div className="flex flex-col items-center leading-none mt-0.5">
+                        <span className="text-[7px] font-bold text-emerald-600">
+                         ({formatJam(attendance.jam_masuk || attendance.createdAt)})
+                        </span>
+                        <span className="text-[7px] font-bold text-blue-600">
+                          ({formatJam(attendance.jam_keluar)})
+                        </span>
+                      </div>
+                    )}
                   </div>
                 );
               }
@@ -188,7 +206,6 @@ const AttendanceCalendar = ({
             display: none !important;
           }
 
-          /* Teks hari (Sen, Sel, Rab, dst) disesuaikan ke 12px (text-xs) */
           .react-calendar__month-view__weekdays {
             text-transform: uppercase;
             font-size: 12px !important;
@@ -197,21 +214,24 @@ const AttendanceCalendar = ({
             margin-bottom: 10px;
           }
 
-          /* Warna teks header hari Sabtu dan Minggu */
           .react-calendar__month-view__weekdays__weekday:nth-child(6) abbr,
           .react-calendar__month-view__weekdays__weekday:nth-child(7) abbr {
             color: #dc2626 !important;
           }
 
-          /* Teks angka tanggal diubah sizenya menjadi 12px (text-xs) */
           .react-calendar__tile {
-            height: 64px; /* Dikecilkan sedikit agar serasi dengan text-xs */
+            height: 76px; /* Ditinggikan sedikit agar muat teks jam masuk & pulang */
             font-size: 12px !important;
             border-radius: 16px;
             transition: 0.2s;
             position: relative;
             color: #374151;
             pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 8px !important;
           }
 
           .react-calendar__tile:hover {
