@@ -57,7 +57,6 @@ const LaporanItem = ({ laporan }) => {
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <div className="flex items-start justify-between gap-3">
-        {/* Tambahkan w-0 dan flex-1 agar teks panjang memaksa turun ke bawah (wrapping) */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="bg-red-50 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0">
@@ -68,7 +67,6 @@ const LaporanItem = ({ laporan }) => {
             </h4>
           </div>
 
-          {/* Deskripsi dengan penanganan break-words agar tidak keluar kotak */}
           <AnimatePresence initial={false}>
             {isExpanded ? (
               <motion.div
@@ -325,6 +323,7 @@ const ListUser = () => {
 
               const isExpanded = expandedUserId === user.id;
               const currentTab = activeTab[user.id] || "kalender";
+              const sudahAbsen = user.Absens && user.Absens.length > 0;
 
               return (
                 <motion.div
@@ -348,19 +347,21 @@ const ListUser = () => {
                         <h2 className="text-base font-bold text-red-600 mb-1">
                           {user.name || "Tanpa Nama"}
                         </h2>
-                        <p className="text-sm font-semibold text-gray-700">
-                          {jabatanText}
-                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-semibold text-gray-700">
+                            {jabatanText}
+                          </p>
+                          {/* BADGE / PENANDA SUDAH ABSEN UNTUK SEMUA USER (TERMASUK KETUA & ANGGOTA) */}
+                          {sudahAbsen && (
+                            <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                              Sudah Absen
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      {user.Absens?.length > 0 && (
-                        <span className="hidden sm:inline-block bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">
-                          Sudah Absen
-                        </span>
-                      )}
-
                       {!isAnggotaAtauKetua && (
                         <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
                           {isExpanded ? (
@@ -373,7 +374,7 @@ const ListUser = () => {
                     </div>
                   </div>
 
-                  {/* Bagian Konten Expand */}
+                  {/* Bagian Konten Expand (Hanya untuk non-anggota/non-ketua) */}
                   {!isAnggotaAtauKetua && (
                     <AnimatePresence>
                       {isExpanded && (
