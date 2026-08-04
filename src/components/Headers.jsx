@@ -56,19 +56,29 @@ const Headers = () => {
 
   // --- LOGIKA PENGECEKAN JAM & STATUS ABSENSI ---
   const serverDate = user?.today ? new Date(user.today) : new Date();
-  const hours = serverDate.getHours();
-  const minutes = serverDate.getMinutes();
+  
+  // Menggunakan getUTCHours() dan getUTCMinutes() agar sinkron dengan format waktu server/UTC (Z)
+  const hours = serverDate.getUTCHours();
+  const minutes = serverDate.getUTCMinutes();
+  const todayString = serverDate.toISOString().split("T")[0];
 
-  // 1. Ambil status absen hari ini dari response database
-  const absenHariIni = user?.Absens?.[0] || null;
+  // Filter absensi HANYA untuk hari ini berdasarkan jam_masuk
+  const absenHariIni = user?.Absens?.find(item => {
+    if (!item.jam_masuk) return false;
+    const tanggalMasuk = new Date(item.jam_masuk).toISOString().split("T")[0];
+    return tanggalMasuk === todayString;
+  }) || null;
+
   const sudahAbsenMasuk = Boolean(absenHariIni && absenHariIni.jam_masuk);
   const sudahAbsenPulang = Boolean(absenHariIni && absenHariIni.jam_keluar);
 
-  // 2. Cek apakah waktu server sudah memenuhi syarat buka tombol
+  // Cek apakah waktu server sudah memenuhi syarat buka tombol (Jam 07:30 UTC)
   const isWaktuMasukBuka = hours > 7 || (hours === 7 && minutes >= 30);
+  
+  // Cek apakah waktu server sudah memenuhi syarat pulang (Jam 16:00 UTC)
   const isWaktuPulangBuka = hours >= 16;
 
-  // 3. Penentuan aktif/tidaknya tombol
+  // Penentuan aktif/tidaknya tombol
   const canClickMasuk = isWaktuMasukBuka && !sudahAbsenMasuk;
   const canClickPulang = isWaktuPulangBuka && sudahAbsenMasuk && !sudahAbsenPulang;
 
