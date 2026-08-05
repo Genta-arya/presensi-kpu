@@ -15,7 +15,6 @@ import {
   Palmtree,
   BookOpen,
   UserX,
-  FileQuestion,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -149,7 +148,7 @@ const ListPresensi = () => {
           </div>
 
           {/* STATS (SELURUH ENUM KECUALI LIBUR) */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
             {/* Hadir */}
             <div className="bg-white rounded-3xl p-4 shadow-lg border border-emerald-100">
               <div className="flex justify-between items-start">
@@ -254,15 +253,15 @@ const ListPresensi = () => {
               </div>
             </div>
 
-            {/* Tidak Hadir */}
-            <div className="bg-white rounded-3xl p-4 shadow-lg border border-rose-100">
-              <div className="flex justify-between items-start">
+            {/* Tidak Hadir (Card Terakhir: Lebar Full / Col Span Penuh) */}
+            <div className="bg-white rounded-3xl p-4 shadow-lg border border-rose-100 col-span-2 md:col-span-3 lg:col-span-4">
+              <div className="flex justify-between items-center">
                 <div>
                   <p className="text-gray-500 text-xs font-semibold">Tidak Hadir</p>
-                  <h1 className="text-2xl font-black text-rose-500 mt-2">{tidakHadir}</h1>
+                  <h1 className="text-2xl font-black text-rose-500 mt-1">{tidakHadir}</h1>
                 </div>
-                <div className="bg-rose-100 p-2.5 rounded-2xl">
-                  <UserX className="text-rose-500" size={20} />
+                <div className="bg-rose-100 p-3 rounded-2xl">
+                  <UserX className="text-rose-500" size={22} />
                 </div>
               </div>
             </div>
