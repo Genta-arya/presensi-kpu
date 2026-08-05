@@ -20,7 +20,7 @@ const AttendanceCalendar = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [keterangan, setKeterangan] = useState("");
 
-  // Opsi utama untuk legenda peta warna (Tetap menampilkan cuti agar warna di kalender terbaca)
+  // Opsi lengkap mencakup seluruh enum dari database
   const statusOptionsAll = [
     { value: "hadir", label: "Hadir" },
     { value: "absen", label: "Absen" },
@@ -30,9 +30,11 @@ const AttendanceCalendar = ({
     { value: "cuti_luar", label: "CLT" },
     { value: "dinas_luar", label: "Dinas Luar" },
     { value: "tugas_belajar", label: "Tugas Belajar" },
+    { value: "tidak_hadir", label: "Tidak Hadir" },
+    { value: "libur", label: "Libur" },
   ];
 
-  // AMAN: Filter opsi agar Admin TIDAK BISA mengubah status absen menjadi cuti secara manual
+  // AMAN: Filter opsi agar Admin TIDAK BISA mengubah status absen menjadi cuti/cuti_luar secara manual
   const statusOptionsForAdmin = useMemo(() => {
     return statusOptionsAll.filter(
       (opt) => opt.value !== "cuti" && opt.value !== "cuti_luar",
@@ -61,6 +63,7 @@ const AttendanceCalendar = ({
     "Desember",
   ];
 
+  // Sesuai dengan seluruh enum StatusAbsen di database Anda
   const colors = {
     hadir: "bg-emerald-500",
     absen: "bg-red-500",
@@ -70,9 +73,11 @@ const AttendanceCalendar = ({
     cuti_luar: "bg-orange-500",
     dinas_luar: "bg-blue-500",
     tugas_belajar: "bg-indigo-500",
+    tidak_hadir: "bg-rose-400",
+    libur: "bg-slate-400",
   };
 
-  const getAttendance = (date) => {
+ const getAttendance = (date) => {
     // 1. Format tanggal kotak kalender menjadi "YYYY-MM-DD" murni
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -80,10 +85,12 @@ const AttendanceCalendar = ({
     const calendarDateStr = `${year}-${month}-${day}`;
 
     return data.find((i) => {
-      if (!i.jam_masuk) return false;
+      // ✅ Gunakan jam_masuk jika ada, jika tidak ada (seperti cuti/izin/libur), gunakan createdAt
+      const targetDateStr = i.jam_masuk || i.createdAt;
+      if (!targetDateStr) return false;
 
-      // 2. Buat objek Date dari jam_masuk, lalu ambil tanggal lokalnya di browser (WIB)
-      const d = new Date(i.jam_masuk);
+      // 2. Buat objek Date, lalu ambil tanggal lokalnya di browser (WIB)
+      const d = new Date(targetDateStr);
       const dbYear = d.getFullYear();
       const dbMonth = String(d.getMonth() + 1).padStart(2, "0");
       const dbDay = String(d.getDate()).padStart(2, "0");
@@ -96,7 +103,7 @@ const AttendanceCalendar = ({
   const handleDayClick = (date) => {
     const existingAttendance = getAttendance(date);
 
-    // ✅ PERBAIKAN: Ekstraksi string lokal YYYY-MM-DD secara presisi tanpa geser zona waktu UTC
+    // ✅ Ekstraksi string lokal YYYY-MM-DD secara presisi tanpa geser zona waktu UTC
     const yearVal = date.getFullYear();
     const monthStr = String(date.getMonth() + 1).padStart(2, "0");
     const dayStr = String(date.getDate()).padStart(2, "0");
@@ -203,24 +210,36 @@ const AttendanceCalendar = ({
             ? "text-holiday-red font-medium cursor-pointer"
             : "cursor-pointer"
         }
-        tileContent={({ date, view }) => {
+       tileContent={({ date, view }) => {
           const res = view === "month" && getAttendance(date);
           if (!res) return null;
 
+          // Helper untuk memaksa konversi ke WIB (UTC +7) secara presisi
+          const getWibTimeString = (dateString) => {
+            if (!dateString) return null;
+            const d = new Date(dateString);
+            if (isNaN(d.getTime())) return null;
+
+            // Tambahkan manual 7 jam ke milidetik UTC agar menjadi waktu WIB
+            const wibDate = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+            const hours = String(wibDate.getUTCHours()).padStart(2, "0");
+            const minutes = String(wibDate.getUTCMinutes()).padStart(2, "0");
+            return `${hours}:${minutes}`;
+          };
+
+          const jamMasukWib = getWibTimeString(res.jam_masuk);
+
           return (
             <div className="flex flex-col items-center mt-1">
+              {/* Titik warna status */}
               <div
                 className={`w-2 h-2 rounded-full ${colors[res.status] || "bg-slate-400"}`}
               />
-              {res.status === "hadir" && (
+              
+              {/* Jam masuk yang sudah dipaksa akurat ke WIB */}
+              {res.status === "hadir" && jamMasukWib && (
                 <span className="text-[8px] font-bold text-slate-500 mt-0.5 scale-90">
-                  {res.jam_masuk
-                    ? new Date(res.jam_masuk).toLocaleTimeString("id-ID", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      })
-                    : "--:--"}
+                  {jamMasukWib}
                 </span>
               )}
             </div>
@@ -234,8 +253,8 @@ const AttendanceCalendar = ({
         </p>
       </div>
 
-      {/* Legenda Indikator Bawah (Tetap Tampilkan Legend Cuti) */}
-      <div className="grid border-dashed grid-cols-2 sm:grid-cols-4 gap-2 rounded-md border-t border-slate-300 p-4 ">
+      {/* Legenda Indikator Bawah (Menampilkan Seluruh Status Enum) */}
+      <div className="grid border-dashed grid-cols-2 sm:grid-cols-4 gap-2 rounded-md border-t border-slate-300 p-4">
         {statusOptionsAll.map((opt) => (
           <div key={opt.value} className="flex items-center gap-2">
             <div
@@ -287,7 +306,7 @@ const AttendanceCalendar = ({
                   Pilih Status Kehadiran
                 </label>
 
-                {/* AMAN: Loop radio button menggunakan statusOptionsForAdmin (Tanpa Cuti & CLT) */}
+                {/* Loop radio button menggunakan statusOptionsForAdmin (Tanpa Cuti & Cuti Luar) */}
                 <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
                   {statusOptionsForAdmin.map((opt) => (
                     <label
@@ -311,7 +330,9 @@ const AttendanceCalendar = ({
                   ))}
                 </div>
 
-                {!["hadir", "absen"].includes(selectedStatus) && (
+                {!["hadir", "absen", "libur", "tidak_hadir"].includes(
+                  selectedStatus,
+                ) && (
                   <div className="pt-2">
                     <label className="text-xs font-black text-slate-400 uppercase block mb-1.5">
                       Keterangan Tambahan

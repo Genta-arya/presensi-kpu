@@ -159,16 +159,30 @@ const ListUser = () => {
     }
   };
 
+  // Helper untuk mendapatkan absensi hari ini (berdasarkan tanggal UTC/Lokal sistem)
+  const getAbsenHariIni = (absens) => {
+    if (!Array.isArray(absens)) return null;
+    const todayString = new Date().toISOString().split("T")[0];
+    return absens.find((item) => {
+      const targetDateStr = item.jam_masuk || item.createdAt;
+      if (!targetDateStr) return false;
+      return new Date(targetDateStr).toISOString().split("T")[0] === todayString;
+    });
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
       const response = await listUser();
       const data = response?.data || [];
 
-      const sudah = data.filter((user) => user.Absens?.length > 0).length;
-      const belum = data.filter(
-        (user) => !user.Absens || user.Absens.length === 0,
-      ).length;
+      // Hitung hanya yang status hari ini bernilai "hadir"
+      const sudah = data.filter((user) => {
+        const absenHariIni = getAbsenHariIni(user.Absens);
+        return absenHariIni && absenHariIni.status === "hadir";
+      }).length;
+
+      const belum = data.length - sudah;
 
       setCountSudah(sudah);
       setCountBelum(belum);
@@ -213,11 +227,15 @@ const ListUser = () => {
       );
     }
     if (filterStatus === "sudah") {
-      result = result.filter((user) => user.Absens?.length > 0);
+      result = result.filter((user) => {
+        const absenHariIni = getAbsenHariIni(user.Absens);
+        return absenHariIni && absenHariIni.status === "hadir";
+      });
     } else if (filterStatus === "belum") {
-      result = result.filter(
-        (user) => !user.Absens || user.Absens.length === 0,
-      );
+      result = result.filter((user) => {
+        const absenHariIni = getAbsenHariIni(user.Absens);
+        return !absenHariIni || absenHariIni.status !== "hadir";
+      });
     }
     setFilteredUsers(result);
   }, [search, users, filterStatus]);
@@ -225,7 +243,7 @@ const ListUser = () => {
   const toggleExpand = (userId, isAnggotaAtauKetua, e) => {
     e.stopPropagation();
     if (isAnggotaAtauKetua) {
-      navigate(`/absensi/${userId}`);
+      navigate(`#`);
       return;
     }
 
@@ -323,7 +341,12 @@ const ListUser = () => {
 
               const isExpanded = expandedUserId === user.id;
               const currentTab = activeTab[user.id] || "kalender";
-              const sudahAbsen = user.Absens && user.Absens.length > 0;
+              
+              // Cek absen hari ini secara spesifik statusnya
+              const absenHariIni = getAbsenHariIni(user.Absens);
+              const statusHariIni = absenHariIni ? absenHariIni.status : null;
+              const isHadir = statusHariIni === "hadir";
+              const isCutiAtauIzin = ["cuti", "cuti_luar", "izin", "sakit", "dinas_luar"].includes(statusHariIni);
 
               return (
                 <motion.div
@@ -351,10 +374,15 @@ const ListUser = () => {
                           <p className="text-sm font-semibold text-gray-700">
                             {jabatanText}
                           </p>
-                          {/* BADGE / PENANDA SUDAH ABSEN UNTUK SEMUA USER (TERMASUK KETUA & ANGGOTA) */}
-                          {sudahAbsen && (
+                          {/* BADGE / PENANDA STATUS HARI INI */}
+                          {isHadir && (
                             <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
                               Sudah Absen
+                            </span>
+                          )}
+                          {isCutiAtauIzin && (
+                            <span className="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                              {statusHariIni.replace("_", " ")}
                             </span>
                           )}
                         </div>

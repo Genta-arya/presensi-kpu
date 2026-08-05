@@ -33,7 +33,6 @@ const AttendanceCalendar = ({
     const currentDate = `${year}-${month}-${day}`;
 
     return data.find((item) => {
-      // Gunakan jam_masuk jika ada, jika tidak fallback ke createdAt
       const referenceDate = item.jam_masuk || item.createdAt;
       if (!referenceDate) return false;
       const d = new Date(referenceDate);
@@ -48,14 +47,12 @@ const AttendanceCalendar = ({
     });
   };
 
-  // HELPER FORMAT JAM (24 Jam murni tanpa geseran zona waktu browser)
-// HELPER FORMAT JAM (Menyesuaikan ke WIB secara manual agar sinkron dengan database)
+  // HELPER FORMAT JAM (Menyesuaikan ke WIB secara manual agar sinkron dengan database)
   const formatJam = (timeString) => {
     if (!timeString) return "--:--";
     const date = new Date(timeString);
     if (isNaN(date.getTime())) return "--:--";
 
-    // Geser milidetik ke waktu lokal WIB (+7 jam dari UTC)
     const wibDate = new Date(date.getTime() + (7 * 60 * 60 * 1000));
 
     return (
@@ -64,7 +61,8 @@ const AttendanceCalendar = ({
       wibDate.getUTCMinutes().toString().padStart(2, "0")
     );
   };
-  // WARNA STATUS
+
+  // WARNA STATUS YANG DISEPAKATI
   const getStatusColor = (status) => {
     switch (status) {
       case "hadir":
@@ -73,6 +71,13 @@ const AttendanceCalendar = ({
         return "bg-yellow-400";
       case "sakit":
         return "bg-sky-500";
+      case "cuti":
+      case "cuti_luar":
+        return "bg-purple-500";
+      case "dinas_luar":
+        return "bg-indigo-500";
+      case "tugas_belajar":
+        return "bg-teal-500";
       default:
         return "bg-red-500";
     }
@@ -140,6 +145,7 @@ const AttendanceCalendar = ({
                     {/* INDIKATOR TITIK WARNA STATUS */}
                     <div
                       className={`w-2 h-2 rounded-full shadow-md ${getStatusColor(attendance.status)}`}
+                      title={`Status: ${attendance.status}`}
                     />
 
                     {/* TAMPILKAN JAM MASUK & PULANG HANYA JIKA STATUS HADIR */}
@@ -149,7 +155,7 @@ const AttendanceCalendar = ({
                          ({formatJam(attendance.jam_masuk || attendance.createdAt)})
                         </span>
                         <span className="text-[7px] font-bold text-blue-600">
-                          ({formatJam(attendance.jam_keluar)})
+                         ({formatJam(attendance.jam_keluar)})
                         </span>
                       </div>
                     )}
@@ -161,8 +167,8 @@ const AttendanceCalendar = ({
           }}
         />
 
-        {/* LEGEND */}
-        <div className="grid grid-cols-2 gap-3 mt-8">
+        {/* LEGEND / KETERANGAN WARNA */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-8">
           <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-3 flex items-center gap-2.5">
             <div className="w-3 h-3 rounded-full bg-emerald-500 flex-shrink-0" />
             <div className="min-w-0">
@@ -187,10 +193,26 @@ const AttendanceCalendar = ({
             </div>
           </div>
 
+          <div className="bg-purple-50 border border-purple-100 rounded-2xl p-3 flex items-center gap-2.5">
+            <div className="w-3 h-3 rounded-full bg-purple-500 flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="font-bold text-xs text-purple-700">Cuti</p>
+              <p className="text-xs text-purple-600 truncate">Masa cuti pegawai</p>
+            </div>
+          </div>
+
+          <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-3 flex items-center gap-2.5">
+            <div className="w-3 h-3 rounded-full bg-indigo-500 flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="font-bold text-xs text-indigo-700">Dinas Luar</p>
+              <p className="text-xs text-indigo-600 truncate">Tugas luar kantor</p>
+            </div>
+          </div>
+
           <div className="bg-red-50 border border-red-100 rounded-2xl p-3 flex items-center gap-2.5">
             <div className="w-3 h-3 rounded-full bg-red-500 flex-shrink-0" />
             <div className="min-w-0">
-              <p className="font-bold text-xs text-red-700">Alpha</p>
+              <p className="font-bold text-xs text-red-700">Alpha / Lainnya</p>
               <p className="text-xs text-red-600 truncate">Tidak hadir</p>
             </div>
           </div>
@@ -225,7 +247,7 @@ const AttendanceCalendar = ({
           }
 
           .react-calendar__tile {
-            height: 76px; /* Ditinggikan sedikit agar muat teks jam masuk & pulang */
+            height: 76px;
             font-size: 12px !important;
             border-radius: 16px;
             transition: 0.2s;

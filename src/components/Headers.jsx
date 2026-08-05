@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useUserContext } from "../State/useContext";
 import { FiLogOut } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { CalendarCheck, LogOut, CheckCircle2, Info } from "lucide-react";
+import { CalendarCheck, LogOut, CheckCircle2, Info, CalendarOff } from "lucide-react";
 import { JABATAN_LABELS } from "../Constants/Constants";
 import useCheckLogin from "../State/useLogin";
 
@@ -57,20 +57,24 @@ const Headers = () => {
   // --- LOGIKA PENGECEKAN JAM & STATUS ABSENSI ---
   const serverDate = user?.today ? new Date(user.today) : new Date();
   
-  // Menggunakan getUTCHours() dan getUTCMinutes() agar sinkron dengan format waktu server/UTC (Z)
   const hours = serverDate.getUTCHours();
   const minutes = serverDate.getUTCMinutes();
   const todayString = serverDate.toISOString().split("T")[0];
 
-  // Filter absensi HANYA untuk hari ini berdasarkan jam_masuk
+  // Filter absensi HANYA untuk hari ini
   const absenHariIni = user?.Absens?.find(item => {
-    if (!item.jam_masuk) return false;
-    const tanggalMasuk = new Date(item.jam_masuk).toISOString().split("T")[0];
-    return tanggalMasuk === todayString;
+    const targetDateStr = item.jam_masuk || item.createdAt;
+    if (!targetDateStr) return false;
+    const tanggalAbsen = new Date(targetDateStr).toISOString().split("T")[0];
+    return tanggalAbsen === todayString;
   }) || null;
 
-  const sudahAbsenMasuk = Boolean(absenHariIni && absenHariIni.jam_masuk);
-  const sudahAbsenPulang = Boolean(absenHariIni && absenHariIni.jam_keluar);
+  const statusHariIni = absenHariIni ? absenHariIni.status : null;
+  const isCutiAtauLibur = ["cuti", "cuti_luar", "libur", "izin", "sakit", "dinas_luar", "tugas_belajar", "tidak_hadir", "absen"].includes(statusHariIni);
+
+  // Status sudah absen hanya berlaku jika statusnya hadir
+  const sudahAbsenMasuk = Boolean(absenHariIni && absenHariIni.jam_masuk && statusHariIni === "hadir");
+  const sudahAbsenPulang = Boolean(absenHariIni && absenHariIni.jam_keluar && statusHariIni === "hadir");
 
   // Cek apakah waktu server sudah memenuhi syarat buka tombol (Jam 07:30 UTC)
   const isWaktuMasukBuka = hours > 7 || (hours === 7 && minutes >= 30);
@@ -79,8 +83,34 @@ const Headers = () => {
   const isWaktuPulangBuka = hours >= 16;
 
   // Penentuan aktif/tidaknya tombol
-  const canClickMasuk = isWaktuMasukBuka && !sudahAbsenMasuk;
-  const canClickPulang = isWaktuPulangBuka && sudahAbsenMasuk && !sudahAbsenPulang;
+  const canClickMasuk = !isCutiAtauLibur && isWaktuMasukBuka && !absenHariIni;
+  const canClickPulang = !isCutiAtauLibur && isWaktuPulangBuka && sudahAbsenMasuk && !sudahAbsenPulang;
+
+  // --- FUNGSI PESAN BANNER BERDASARKAN STATUS ---
+  const getStatusMessage = (status) => {
+    switch (status) {
+      case "cuti":
+      case "cuti_luar":
+        return "☕ Anda sedang menikmati masa cuti hari ini. Selamat beristirahat!";
+      case "izin":
+        return "📝 Anda tercatat izin untuk hari ini. Semoga urusannya lancar.";
+      case "sakit":
+        return "💊 Anda tercatat sakit hari ini. Semoga lekas diberikan kesembuhan.";
+      case "dinas_luar":
+        return "Briefcase Anda sedang menjalankan tugas Dinas Luar hari ini. Semangat!";
+      case "tugas_belajar":
+        return "📚 Anda sedang menjalani Tugas Belajar hari ini. Terus semangat!";
+      case "libur":
+        return "🌴 Hari ini adalah hari libur. Nikmati waktu santai Anda!";
+      case "tidak_hadir":
+      case "absen":
+        return "⚠️ Anda tercatat tidak hadir / absen pada hari ini.";
+      default:
+        return sudahAbsenPulang
+          ? "✨ Sempurna! Presensi masuk & pulang hari ini sudah diselesaikan."
+          : "✅ Mantap! Presensi masuk hari ini sudah berhasil direkam.";
+    }
+  };
 
   return (
     <>
@@ -139,12 +169,19 @@ const Headers = () => {
               className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black shadow-sm transition-all ${
                 canClickMasuk
                   ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer"
-                  : sudahAbsenMasuk
-                    ? "bg-emerald-100/60 text-emerald-800/60 border border-emerald-200/50 cursor-not-allowed"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                  : isCutiAtauLibur
+                    ? "bg-purple-50 text-purple-700 border border-purple-200/50 cursor-not-allowed"
+                    : sudahAbsenMasuk
+                      ? "bg-emerald-100/60 text-emerald-800/60 border border-emerald-200/50 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
               }`}
             >
-              {sudahAbsenMasuk ? (
+              {isCutiAtauLibur ? (
+                <>
+                  <CalendarOff size={16} className="text-purple-600" />
+                  <span className="capitalize">{statusHariIni.replace("_", " ")}</span>
+                </>
+              ) : sudahAbsenMasuk ? (
                 <>
                   <CheckCircle2 size={16} className="text-emerald-600" />
                   <span>Sudah Masuk</span>
@@ -166,12 +203,19 @@ const Headers = () => {
               className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black shadow-sm transition-all ${
                 canClickPulang
                   ? "bg-rose-50 text-rose-700 hover:bg-rose-100 cursor-pointer"
-                  : sudahAbsenPulang
-                    ? "bg-rose-100/60 text-rose-800/60 border border-rose-200/50 cursor-not-allowed"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                  : isCutiAtauLibur
+                    ? "bg-purple-50 text-purple-700 border border-purple-200/50 cursor-not-allowed"
+                    : sudahAbsenPulang
+                      ? "bg-rose-100/60 text-rose-800/60 border border-rose-200/50 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
               }`}
             >
-              {sudahAbsenPulang ? (
+              {isCutiAtauLibur ? (
+                <>
+                  <CalendarOff size={16} className="text-purple-600" />
+                  <span className="capitalize">{statusHariIni.replace("_", " ")}</span>
+                </>
+              ) : sudahAbsenPulang ? (
                 <>
                   <CheckCircle2 size={16} className="text-rose-600" />
                   <span>Sudah Pulang</span>
@@ -188,20 +232,18 @@ const Headers = () => {
           </div>
 
           {/* --- KETERANGAN STATUS PRESENSI HARI INI (V1) --- */}
-          {(sudahAbsenMasuk || sudahAbsenPulang) && (
+          {absenHariIni && (
             <div
               className={`mt-2.5 px-3 py-2 rounded-xl border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-all ${
-                sudahAbsenPulang
-                  ? "bg-emerald-50/80 border-emerald-200/60 text-emerald-700"
-                  : "bg-blue-50/80 border-blue-200/60 text-blue-700"
+                isCutiAtauLibur
+                  ? "bg-purple-50/80 border-purple-200/60 text-purple-700"
+                  : sudahAbsenPulang
+                    ? "bg-emerald-50/80 border-emerald-200/60 text-emerald-700"
+                    : "bg-blue-50/80 border-blue-200/60 text-blue-700"
               }`}
             >
               <Info size={14} className="flex-shrink-0" />
-              <span>
-                {sudahAbsenPulang
-                  ? "Anda sudah menyelesaikan presensi masuk & pulang hari ini."
-                  : "Anda sudah melakukan presensi masuk hari ini."}
-              </span>
+              <span>{getStatusMessage(statusHariIni)}</span>
             </div>
           )}
         </div>
@@ -261,12 +303,19 @@ const Headers = () => {
               className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-black shadow-sm transition-all ${
                 canClickMasuk
                   ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 cursor-pointer"
-                  : sudahAbsenMasuk
-                    ? "bg-emerald-100/60 text-emerald-800/60 border border-emerald-200/50 cursor-not-allowed"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                  : isCutiAtauLibur
+                    ? "bg-purple-50 text-purple-700 border border-purple-200/50 cursor-not-allowed"
+                    : sudahAbsenMasuk
+                      ? "bg-emerald-100/60 text-emerald-800/60 border border-emerald-200/50 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
               }`}
             >
-              {sudahAbsenMasuk ? (
+              {isCutiAtauLibur ? (
+                <>
+                  <CalendarOff size={14} className="text-purple-600" />
+                  <span className="capitalize">{statusHariIni.replace("_", " ")}</span>
+                </>
+              ) : sudahAbsenMasuk ? (
                 <>
                   <CheckCircle2 size={14} className="text-emerald-600" />
                   <span>Masuk (Selesai)</span>
@@ -285,12 +334,19 @@ const Headers = () => {
               className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-black shadow-sm transition-all ${
                 canClickPulang
                   ? "bg-rose-50 text-rose-700 hover:bg-rose-100 cursor-pointer"
-                  : sudahAbsenPulang
-                    ? "bg-rose-100/60 text-rose-800/60 border border-rose-200/50 cursor-not-allowed"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
+                  : isCutiAtauLibur
+                    ? "bg-purple-50 text-purple-700 border border-purple-200/50 cursor-not-allowed"
+                    : sudahAbsenPulang
+                      ? "bg-rose-100/60 text-rose-800/60 border border-rose-200/50 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-60"
               }`}
             >
-              {sudahAbsenPulang ? (
+              {isCutiAtauLibur ? (
+                <>
+                  <CalendarOff size={14} className="text-purple-600" />
+                  <span className="capitalize">{statusHariIni.replace("_", " ")}</span>
+                </>
+              ) : sudahAbsenPulang ? (
                 <>
                   <CheckCircle2 size={14} className="text-rose-600" />
                   <span>Pulang (Selesai)</span>
@@ -304,20 +360,18 @@ const Headers = () => {
           </div>
 
           {/* --- KETERANGAN STATUS PRESENSI HARI INI (V2) --- */}
-          {(sudahAbsenMasuk || sudahAbsenPulang) && (
+          {absenHariIni && (
             <div
               className={`px-2.5 py-1.5 rounded-lg border flex items-center justify-center gap-1 text-[10px] font-bold transition-all ${
-                sudahAbsenPulang
-                  ? "bg-emerald-50/80 border-emerald-200/60 text-emerald-700"
-                  : "bg-blue-50/80 border-blue-200/60 text-blue-700"
+                isCutiAtauLibur
+                  ? "bg-purple-50/80 border-purple-200/60 text-purple-700"
+                  : sudahAbsenPulang
+                    ? "bg-emerald-50/80 border-emerald-200/60 text-emerald-700"
+                    : "bg-blue-50/80 border-blue-200/60 text-blue-700"
               }`}
             >
               <Info size={13} className="flex-shrink-0" />
-              <span className="truncate">
-                {sudahAbsenPulang
-                  ? "Presensi masuk & pulang hari ini sudah selesai."
-                  : "Presensi masuk hari ini sudah selesai."}
-              </span>
+              <span className="truncate">{getStatusMessage(statusHariIni)}</span>
             </div>
           )}
         </div>
