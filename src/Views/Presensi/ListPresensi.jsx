@@ -87,18 +87,6 @@ const ListPresensi = () => {
     });
   };
 
-  const formatJamWIB = (timeString) => {
-    if (!timeString) return "--:--";
-    const d = new Date(timeString);
-    if (isNaN(d.getTime())) return "--:--";
-    const wibDate = new Date(d.getTime() + 7 * 60 * 60 * 1000);
-    return (
-      String(wibDate.getUTCHours()).padStart(2, "0") +
-      ":" +
-      String(wibDate.getUTCMinutes()).padStart(2, "0")
-    );
-  };
-
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
@@ -183,7 +171,7 @@ const ListPresensi = () => {
             </div>
           </div>
 
-          {/* STATS (DAPAT DIKLIK UNTUK MEMUNCULKAN MODAL) */}
+          {/* STATS (DAPAT DIKLIK) */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
             
             {/* Hadir */}
@@ -343,7 +331,7 @@ const ListPresensi = () => {
         </div>
       </div>
 
-      {/* --- MODAL DETAIL TANGGAL STATUS --- */}
+      {/* --- MODAL DETAIL HARI & TANGGAL (DENGAN SCROLL) --- */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-3xl shadow-xl border border-slate-100 w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
@@ -353,7 +341,7 @@ const ListPresensi = () => {
               <div>
                 <h3 className="text-base font-black text-slate-800">{modalTitle}</h3>
                 <p className="text-xs text-slate-400 font-medium mt-0.5">
-                  Periode: {months.find(m => m.value === selectedMonth)?.label} {selectedYear}
+                  Periode: {months.find(m => m.value === selectedMonth)?.label} {selectedYear} ({modalItems.length} Data)
                 </p>
               </div>
               <button
@@ -364,8 +352,8 @@ const ListPresensi = () => {
               </button>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-5 overflow-y-auto space-y-3 flex-1">
+            {/* Modal Body (Dapat di-scroll jika banyak data) */}
+            <div className="p-5 overflow-y-auto space-y-3 flex-1 max-h-96">
               {modalItems.length === 0 ? (
                 <div className="text-center py-10 text-gray-400 text-sm">
                   Tidak ada data untuk status ini pada bulan tersebut.
@@ -376,21 +364,19 @@ const ListPresensi = () => {
                   return (
                     <div 
                       key={item.id || idx}
-                      className="bg-slate-50 border border-slate-200/60 p-4 rounded-2xl flex flex-col gap-1.5"
+                      className="bg-slate-50 border border-slate-200/60 p-4 rounded-2xl flex flex-col gap-1"
                     >
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-red-100 text-red-600 text-xs font-bold flex items-center justify-center shrink-0">
+                          {idx + 1}
+                        </span>
+                        <span className="text-xs font-bold text-slate-800">
                           {formatTanggalWIB(targetDate)}
                         </span>
-                        {item.status === "hadir" && item.jam_masuk && (
-                          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
-                            Masuk: {formatJamWIB(item.jam_masuk)}
-                          </span>
-                        )}
                       </div>
 
                       {item.keterangan && (
-                        <p className="text-xs text-slate-600 mt-1">
+                        <p className="text-xs text-slate-500 pl-8 mt-0.5">
                           <span className="font-semibold text-slate-700">Keterangan:</span> {item.keterangan}
                         </p>
                       )}
