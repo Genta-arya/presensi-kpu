@@ -13,6 +13,9 @@ import {
   Sparkles,
   Briefcase,
   Palmtree,
+  BookOpen,
+  UserX,
+  FileQuestion,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -50,13 +53,16 @@ const ListPresensi = () => {
     }
   }, [user, selectedMonth, selectedYear]);
 
-  // Penghitungan status kehadiran lengkap termasuk cuti & dinas luar
+  // Penghitungan status kehadiran lengkap sesuai enum (Kecuali libur)
   const hadir = data.filter((d) => d.status === "hadir").length;
+  const absen = data.filter((d) => d.status === "absen").length;
   const izin = data.filter((d) => d.status === "izin").length;
   const sakit = data.filter((d) => d.status === "sakit").length;
-  const alpha = data.filter((d) => d.status === "alpha" || d.status === "absen" || d.status === "tidak_hadir").length;
-  const cuti = data.filter((d) => d.status === "cuti" || d.status === "cuti_luar").length;
+  const cuti = data.filter((d) => d.status === "cuti").length;
+  const cutiLuar = data.filter((d) => d.status === "cuti_luar").length;
   const dinasLuar = data.filter((d) => d.status === "dinas_luar").length;
+  const tugasBelajar = data.filter((d) => d.status === "tugas_belajar").length;
+  const tidakHadir = data.filter((d) => d.status === "tidak_hadir").length;
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
@@ -142,8 +148,8 @@ const ListPresensi = () => {
             </div>
           </div>
 
-          {/* STATS (DIPERLUAS DENGAN CUTI & DINAS LUAR) */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-6">
+          {/* STATS (SELURUH ENUM KECUALI LIBUR) */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-6">
             {/* Hadir */}
             <div className="bg-white rounded-3xl p-4 shadow-lg border border-emerald-100">
               <div className="flex justify-between items-start">
@@ -153,6 +159,19 @@ const ListPresensi = () => {
                 </div>
                 <div className="bg-emerald-100 p-2.5 rounded-2xl">
                   <CheckCircle2 className="text-emerald-600" size={20} />
+                </div>
+              </div>
+            </div>
+
+            {/* Absen */}
+            <div className="bg-white rounded-3xl p-4 shadow-lg border border-red-100">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-gray-500 text-xs font-semibold">Absen</p>
+                  <h1 className="text-2xl font-black text-red-500 mt-2">{absen}</h1>
+                </div>
+                <div className="bg-red-100 p-2.5 rounded-2xl">
+                  <XCircle className="text-red-500" size={20} />
                 </div>
               </div>
             </div>
@@ -196,28 +215,54 @@ const ListPresensi = () => {
               </div>
             </div>
 
-            {/* Dinas Luar */}
-            <div className="bg-white rounded-3xl p-4 shadow-lg border border-indigo-100">
+            {/* Cuti Luar */}
+            <div className="bg-white rounded-3xl p-4 shadow-lg border border-orange-100">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-500 text-xs font-semibold">Dinas Luar</p>
-                  <h1 className="text-2xl font-black text-indigo-600 mt-2">{dinasLuar}</h1>
+                  <p className="text-gray-500 text-xs font-semibold">Cuti Luar (CLT)</p>
+                  <h1 className="text-2xl font-black text-orange-500 mt-2">{cutiLuar}</h1>
                 </div>
-                <div className="bg-indigo-100 p-2.5 rounded-2xl">
-                  <Briefcase className="text-indigo-600" size={20} />
+                <div className="bg-orange-100 p-2.5 rounded-2xl">
+                  <Palmtree className="text-orange-500" size={20} />
                 </div>
               </div>
             </div>
 
-            {/* Alpha / Tidak Hadir */}
-            <div className="bg-white rounded-3xl p-4 shadow-lg border border-red-100">
+            {/* Dinas Luar */}
+            <div className="bg-white rounded-3xl p-4 shadow-lg border border-blue-100">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-gray-500 text-xs font-semibold">Alpha</p>
-                  <h1 className="text-2xl font-black text-red-500 mt-2">{alpha}</h1>
+                  <p className="text-gray-500 text-xs font-semibold">Dinas Luar</p>
+                  <h1 className="text-2xl font-black text-blue-500 mt-2">{dinasLuar}</h1>
                 </div>
-                <div className="bg-red-100 p-2.5 rounded-2xl">
-                  <XCircle className="text-red-500" size={20} />
+                <div className="bg-blue-100 p-2.5 rounded-2xl">
+                  <Briefcase className="text-blue-500" size={20} />
+                </div>
+              </div>
+            </div>
+
+            {/* Tugas Belajar */}
+            <div className="bg-white rounded-3xl p-4 shadow-lg border border-indigo-100">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-gray-500 text-xs font-semibold">Tugas Belajar</p>
+                  <h1 className="text-2xl font-black text-indigo-600 mt-2">{tugasBelajar}</h1>
+                </div>
+                <div className="bg-indigo-100 p-2.5 rounded-2xl">
+                  <BookOpen className="text-indigo-600" size={20} />
+                </div>
+              </div>
+            </div>
+
+            {/* Tidak Hadir */}
+            <div className="bg-white rounded-3xl p-4 shadow-lg border border-rose-100">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-gray-500 text-xs font-semibold">Tidak Hadir</p>
+                  <h1 className="text-2xl font-black text-rose-500 mt-2">{tidakHadir}</h1>
+                </div>
+                <div className="bg-rose-100 p-2.5 rounded-2xl">
+                  <UserX className="text-rose-500" size={20} />
                 </div>
               </div>
             </div>
