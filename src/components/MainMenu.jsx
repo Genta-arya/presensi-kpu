@@ -100,7 +100,7 @@ const InfoCard = ({ date, title, content, onClick }) => (
 );
 
 const MainMenu = () => {
-  const { isLoading, checkSession , user} = useCheckLogin();
+  const { isLoading, checkSession, user } = useCheckLogin();
  
   const navigate = useNavigate();
   const [activeInfo, setActiveInfo] = useState(null);
@@ -108,25 +108,11 @@ const MainMenu = () => {
 
   const infoData = [
     {
-      date: "21 Mei 2026",
-      title: "Rapat Pleno Rutin Mingguan",
-      content: "Diberitahukan kepada seluruh komisioner dan staf sekretariat KPU Kabupaten Sekadau untuk dapat menghadiri rapat pleno rutin internal yang akan membahas persiapan logistik pemilu susulan. Rapat akan dilaksanakan di Ruang Pertemuan Utama pada pukul 09:00 WIB.",
+      date: "05 Agustus 2026",
+      title: "Ketentuan Jam Masuk dan Jam Pulang Pegawai",
+      content: "Diberitahukan kepada seluruh staff KPU Kabupaten Sekadau bahwa jam masuk presensi dimulai pukul 07:30 WIB. Untuk jam pulang kantor ditetapkan pukul 16:00 WIB (Senin sampai Kamis) dan pukul 16:30 WIB (khusus hari Jumat). Harap seluruh pegawai memperhatikan ketentuan waktu kehadiran ini dengan disiplin.",
     },
-    {
-      date: "19 Mei 2026",
-      title: "Bimtek Pemutakhiran Data Pemilih",
-      content: "Pelaksanaan Bimbingan Teknis (Bimtek) bagi PPK dan PPS se-Kabupaten Sekadau mengenai penggunaan sistem informasi pemutakhiran data pemilih terbaru. Diharapkan staf subbagian data memonitor kelancaran jaringan selama kegiatan berlangsung.",
-    },
-    {
-      date: "15 Mei 2026",
-      title: "Pengingat Laporan Harian Tugas",
-      content: "Mengingat pentingnya akuntabilitas kinerja administrasi, seluruh pegawai honorer maupun ASN di lingkungan KPU Sekadau diwajibkan untuk mengisi dan merampungkan draf laporan harian tugas (e-Kinerja) sebelum pukul 16:00 WIB setiap harinya.",
-    },
-    {
-      date: "10 Mei 2026",
-      title: "Pembereliharaan Server Internal SPSE",
-      content: "Akan dilakukan pemeliharaan rutin jaringan dan pembaruan sistem keamanan server pada Layanan Pengadaan Secara Elektronik (SPSE) internal KPU. Akses sistem kemungkinan akan mengalami gangguan sementara pada hari Sabtu mulai pukul 23:00 WIB.",
-    },
+  
   ];
 
   const menuList = [
@@ -154,14 +140,14 @@ const MainMenu = () => {
     };
   }, [activeInfo, showIframeModal]);
 
-if (isLoading || !user) {
-  return <Loading />;
-}
+  if (isLoading || !user) {
+    return <Loading />;
+  }
 
   return (
     <Container>
       <Headers />
-      <Helmet >
+      <Helmet>
         <title>Sistem Informasi Kepegawaian KPU Kabupaten Sekadau</title>
       </Helmet>
 
@@ -245,11 +231,11 @@ if (isLoading || !user) {
           <p className="text-[9px] font-black tracking-widest text-gray-400 uppercase">
             Sistem Informasi Kepegawaian
           </p>
-             <p className="text-[8px] font-black tracking-widest text-gray-400 uppercase">
+          <p className="text-[8px] font-black tracking-widest text-gray-400 uppercase">
             KPU Kabupaten Sekadau
           </p>
           <div className="inline-flex mt-2 items-center bg-gray-100 border border-gray-200/60 px-2 py-0.5 rounded-full shadow-inner">
-            <span className="text-[9px]  font-black tracking-wider text-gray-500 font-mono">
+            <span className="text-[9px] font-black tracking-wider text-gray-500 font-mono">
               v1.0
             </span>
           </div>

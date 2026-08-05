@@ -7,6 +7,8 @@ import {
   MoreVertical,
   Trash2,
   Edit,
+  Calendar as CalendarIcon,
+  X,
 } from "lucide-react";
 import Editor from "../../components/Editor";
 import { toast } from "sonner";
@@ -26,7 +28,9 @@ import { Helmet } from "react-helmet-async";
 
 const LaporanKegiatan = () => {
   const [search, setSearch] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  // Jika ingin default langsung memuat semua laporan tanpa filter tanggal awal, ganti string kosong atau tetap hari ini. 
+  // Di sini kita buat default kosong atau bisa diisi string tanggal. Biar fleksibel, kita buat state date bisa null/kosong.
+  const [date, setDate] = useState(""); 
   const [showEditor, setShowEditor] = useState(false);
   const [editorContent, setEditorContent] = useState("");
   const [judul, setJudul] = useState("");
@@ -160,7 +164,6 @@ const LaporanKegiatan = () => {
         >
           <FaChevronLeft size={18} />
           <p className="ml-2 text-lg font-bold">
-
           {editingId ? "Edit Laporan" : "Buat Laporan Baru"}
           </p>
         </button>
@@ -168,7 +171,6 @@ const LaporanKegiatan = () => {
         <div className="p-4 space-y-4">
           <div className="flex gap-2 items-center text-sm font-semibold">
             <FaCircle size={10} />
-
             <label className="">Judul Laporan</label>
           </div>
           <input
@@ -182,7 +184,6 @@ const LaporanKegiatan = () => {
           <div className="flex justify-between gap-2 items-center text-sm font-semibold mt-2">
             <div className="flex  gap-2 items-center">
               <FaCircle size={10} />
-
               <label className="">Tanggal Laporan</label>
             </div>
             <p className="text-xs text-gray-500 mt-1">
@@ -196,16 +197,16 @@ const LaporanKegiatan = () => {
             </p>
           </div>
 
+          {/* Input Tanggal di Form Editor (Tetap menggunakan input date standar atau bisa disesuaikan, tapi di iOS form input biasanya aman asal diberi styling border/padding) */}
           <input
             type="date"
             value={tanggal}
             onChange={(e) => setTanggal(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg"
+            className="w-full px-3 py-2 border rounded-lg bg-white"
           />
 
           <div className="flex gap-2 items-center text-sm font-semibold mt-2">
             <FaCircle size={10} />
-
             <label className="">Deskripsi Laporan</label>
           </div>
 
@@ -234,6 +235,7 @@ const LaporanKegiatan = () => {
       </Helmet>
 
       <div className="p-4 space-y-4 pt-20 ">
+        {/* Input Pencarian Judul */}
         <div className="relative">
           <Search
             size={18}
@@ -244,24 +246,75 @@ const LaporanKegiatan = () => {
             placeholder="Cari laporan..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full border pl-10 pr-3 py-2 rounded-lg"
+            className="w-full border pl-10 pr-3 py-2 rounded-lg bg-white"
           />
         </div>
 
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="w-full border px-3 py-2 rounded-lg"
-        />
+        {/* CUSTOM FILTER TANGGAL (RAMAH IPHONE / MOBILE) */}
+        <div className="bg-white p-3 rounded-xl border shadow-xs space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <CalendarIcon size={14} className="text-red-600" />
+              <span>Filter Tanggal</span>
+            </div>
+            
+            {/* Tombol Clear / Reset Filter */}
+            {date && (
+              <button
+                onClick={() => setDate("")}
+                className="text-xs text-red-600 hover:text-red-700 font-semibold flex items-center gap-1 bg-red-50 px-2 py-1 rounded-md transition-colors"
+              >
+                <X size={12} /> Hapus Filter
+              </button>
+            )}
+          </div>
 
+          <div className="flex items-center gap-2">
+            {/* Input Date dengan Tampilan Custom Wrapper */}
+            <div className="relative flex-1">
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full border px-3 py-2 rounded-lg text-sm bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+              />
+            </div>
+
+            {/* Quick Button: Hari Ini */}
+            <button
+              onClick={() => setDate(new Date().toISOString().split("T")[0])}
+              className={`px-3 py-2 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                date === new Date().toISOString().split("T")[0]
+                  ? "bg-red-600 text-white shadow-sm"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              Hari Ini
+            </button>
+          </div>
+
+          {/* Keterangan Status Filter Aktif */}
+         
+        </div>
+
+        {/* LIST LAPORAN */}
         {filteredData.length === 0 ? (
-          <p className="text-center text-gray-400 text-sm">Tidak ada laporan</p>
+          <div className="text-center py-10 bg-white rounded-xl border border-dashed border-gray-200 p-6">
+            <p className="text-gray-400 text-sm">Tidak ada laporan ditemukan</p>
+            {date && (
+              <button 
+                onClick={() => setDate("")}
+                className="mt-2 text-xs text-red-600 font-semibold underline"
+              >
+                Tampilkan semua tanggal
+              </button>
+            )}
+          </div>
         ) : (
           filteredData.map((item, index) => (
             <div
               key={item.id}
-              className="bg-white hover:shadow hover:bg-gray-50 p-3 rounded-lg shadow flex justify-between items-center relative"
+              className="bg-white hover:shadow hover:bg-gray-50 p-3 rounded-lg shadow flex justify-between items-center relative transition-all"
             >
               {/* AREA YANG BOLEH NAVIGATE */}
               <div
@@ -293,6 +346,7 @@ const LaporanKegiatan = () => {
                     e.stopPropagation();
                     setOpenMenuId(openMenuId === item.id ? null : item.id);
                   }}
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                 >
                   <MoreVertical size={18} />
                 </button>
@@ -330,12 +384,14 @@ const LaporanKegiatan = () => {
 
       <button
         onClick={() => setShowEditor(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg hover:bg-red-700 transition-transform active:scale-95"
       >
         <Plus size={24} />
       </button>
     </>
   );
 };
+
+
 
 export default LaporanKegiatan;

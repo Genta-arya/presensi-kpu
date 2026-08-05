@@ -171,7 +171,7 @@ const DetailLaporan = () => {
           onClick={() => navigate("/laporan-harian")}
         >
           <FaChevronLeft />
-          <span className="ml-2 text-lg font-bold">Detail Laporan</span>
+          <span className="ml-2 text-sm font-bold">Detail Laporan</span>
         </div>
       </div>
 
