@@ -15,6 +15,7 @@ import {
   Palmtree,
   BookOpen,
   UserX,
+  X,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -30,6 +31,11 @@ const ListPresensi = () => {
   
   const [selectedMonth, setSelectedMonth] = React.useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = React.useState(new Date().getFullYear());
+
+  // State untuk Modal Detail Status
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [modalTitle, setModalTitle] = React.useState("");
+  const [modalItems, setModalItems] = React.useState([]);
 
   const { user } = useCheckLogin();
 
@@ -52,16 +58,46 @@ const ListPresensi = () => {
     }
   }, [user, selectedMonth, selectedYear]);
 
-  // Penghitungan status kehadiran lengkap sesuai enum (Kecuali libur)
-  const hadir = data.filter((d) => d.status === "hadir").length;
-  const absen = data.filter((d) => d.status === "absen").length;
-  const izin = data.filter((d) => d.status === "izin").length;
-  const sakit = data.filter((d) => d.status === "sakit").length;
-  const cuti = data.filter((d) => d.status === "cuti").length;
-  const cutiLuar = data.filter((d) => d.status === "cuti_luar").length;
-  const dinasLuar = data.filter((d) => d.status === "dinas_luar").length;
-  const tugasBelajar = data.filter((d) => d.status === "tugas_belajar").length;
-  const tidakHadir = data.filter((d) => d.status === "tidak_hadir").length;
+  // Filter data berdasarkan status
+  const listHadir = data.filter((d) => d.status === "hadir");
+  const listAbsen = data.filter((d) => d.status === "absen");
+  const listIzin = data.filter((d) => d.status === "izin");
+  const listSakit = data.filter((d) => d.status === "sakit");
+  const listCuti = data.filter((d) => d.status === "cuti");
+  const listCutiLuar = data.filter((d) => d.status === "cuti_luar");
+  const listDinasLuar = data.filter((d) => d.status === "dinas_luar");
+  const listTugasBelajar = data.filter((d) => d.status === "tugas_belajar");
+  const listTidakHadir = data.filter((d) => d.status === "tidak_hadir");
+
+  const openDetailModal = (title, items) => {
+    setModalTitle(title);
+    setModalItems(items);
+    setModalOpen(true);
+  };
+
+  const formatTanggalWIB = (dateString) => {
+    if (!dateString) return "-";
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return "-";
+    return d.toLocaleDateString("id-ID", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formatJamWIB = (timeString) => {
+    if (!timeString) return "--:--";
+    const d = new Date(timeString);
+    if (isNaN(d.getTime())) return "--:--";
+    const wibDate = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+    return (
+      String(wibDate.getUTCHours()).padStart(2, "0") +
+      ":" +
+      String(wibDate.getUTCMinutes()).padStart(2, "0")
+    );
+  };
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
@@ -147,14 +183,18 @@ const ListPresensi = () => {
             </div>
           </div>
 
-          {/* STATS (SELURUH ENUM KECUALI LIBUR) */}
+          {/* STATS (DAPAT DIKLIK UNTUK MEMUNCULKAN MODAL) */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+            
             {/* Hadir */}
-            <div className="bg-white rounded-3xl p-4 shadow-lg border border-emerald-100">
+            <div 
+              onClick={() => openDetailModal("Daftar Kehadiran (Hadir)", listHadir)}
+              className="bg-white rounded-3xl p-4 shadow-lg border border-emerald-100 cursor-pointer hover:shadow-xl hover:border-emerald-300 transition-all"
+            >
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-gray-500 text-xs font-semibold">Hadir</p>
-                  <h1 className="text-2xl font-black text-emerald-600 mt-2">{hadir}</h1>
+                  <h1 className="text-2xl font-black text-emerald-600 mt-2">{listHadir.length}</h1>
                 </div>
                 <div className="bg-emerald-100 p-2.5 rounded-2xl">
                   <CheckCircle2 className="text-emerald-600" size={20} />
@@ -163,11 +203,14 @@ const ListPresensi = () => {
             </div>
 
             {/* Absen */}
-            <div className="bg-white rounded-3xl p-4 shadow-lg border border-red-100">
+            <div 
+              onClick={() => openDetailModal("Daftar Absen", listAbsen)}
+              className="bg-white rounded-3xl p-4 shadow-lg border border-red-100 cursor-pointer hover:shadow-xl hover:border-red-300 transition-all"
+            >
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-gray-500 text-xs font-semibold">Absen</p>
-                  <h1 className="text-2xl font-black text-red-500 mt-2">{absen}</h1>
+                  <h1 className="text-2xl font-black text-red-500 mt-2">{listAbsen.length}</h1>
                 </div>
                 <div className="bg-red-100 p-2.5 rounded-2xl">
                   <XCircle className="text-red-500" size={20} />
@@ -176,11 +219,14 @@ const ListPresensi = () => {
             </div>
 
             {/* Izin */}
-            <div className="bg-white rounded-3xl p-4 shadow-lg border border-yellow-100">
+            <div 
+              onClick={() => openDetailModal("Daftar Izin", listIzin)}
+              className="bg-white rounded-3xl p-4 shadow-lg border border-yellow-100 cursor-pointer hover:shadow-xl hover:border-yellow-300 transition-all"
+            >
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-gray-500 text-xs font-semibold">Izin</p>
-                  <h1 className="text-2xl font-black text-yellow-500 mt-2">{izin}</h1>
+                  <h1 className="text-2xl font-black text-yellow-500 mt-2">{listIzin.length}</h1>
                 </div>
                 <div className="bg-yellow-100 p-2.5 rounded-2xl">
                   <Clock3 className="text-yellow-500" size={20} />
@@ -189,11 +235,14 @@ const ListPresensi = () => {
             </div>
 
             {/* Sakit */}
-            <div className="bg-white rounded-3xl p-4 shadow-lg border border-sky-100">
+            <div 
+              onClick={() => openDetailModal("Daftar Sakit", listSakit)}
+              className="bg-white rounded-3xl p-4 shadow-lg border border-sky-100 cursor-pointer hover:shadow-xl hover:border-sky-300 transition-all"
+            >
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-gray-500 text-xs font-semibold">Sakit</p>
-                  <h1 className="text-2xl font-black text-sky-500 mt-2">{sakit}</h1>
+                  <h1 className="text-2xl font-black text-sky-500 mt-2">{listSakit.length}</h1>
                 </div>
                 <div className="bg-sky-100 p-2.5 rounded-2xl">
                   <Stethoscope className="text-sky-500" size={20} />
@@ -202,11 +251,14 @@ const ListPresensi = () => {
             </div>
 
             {/* Cuti */}
-            <div className="bg-white rounded-3xl p-4 shadow-lg border border-purple-100">
+            <div 
+              onClick={() => openDetailModal("Daftar Cuti", listCuti)}
+              className="bg-white rounded-3xl p-4 shadow-lg border border-purple-100 cursor-pointer hover:shadow-xl hover:border-purple-300 transition-all"
+            >
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-gray-500 text-xs font-semibold">Cuti</p>
-                  <h1 className="text-2xl font-black text-purple-600 mt-2">{cuti}</h1>
+                  <h1 className="text-2xl font-black text-purple-600 mt-2">{listCuti.length}</h1>
                 </div>
                 <div className="bg-purple-100 p-2.5 rounded-2xl">
                   <Palmtree className="text-purple-600" size={20} />
@@ -215,11 +267,14 @@ const ListPresensi = () => {
             </div>
 
             {/* Cuti Luar */}
-            <div className="bg-white rounded-3xl p-4 shadow-lg border border-orange-100">
+            <div 
+              onClick={() => openDetailModal("Daftar Cuti Luar (CLT)", listCutiLuar)}
+              className="bg-white rounded-3xl p-4 shadow-lg border border-orange-100 cursor-pointer hover:shadow-xl hover:border-orange-300 transition-all"
+            >
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-gray-500 text-xs font-semibold">Cuti Luar (CLT)</p>
-                  <h1 className="text-2xl font-black text-orange-500 mt-2">{cutiLuar}</h1>
+                  <h1 className="text-2xl font-black text-orange-500 mt-2">{listCutiLuar.length}</h1>
                 </div>
                 <div className="bg-orange-100 p-2.5 rounded-2xl">
                   <Palmtree className="text-orange-500" size={20} />
@@ -228,11 +283,14 @@ const ListPresensi = () => {
             </div>
 
             {/* Dinas Luar */}
-            <div className="bg-white rounded-3xl p-4 shadow-lg border border-blue-100">
+            <div 
+              onClick={() => openDetailModal("Daftar Dinas Luar", listDinasLuar)}
+              className="bg-white rounded-3xl p-4 shadow-lg border border-blue-100 cursor-pointer hover:shadow-xl hover:border-blue-300 transition-all"
+            >
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-gray-500 text-xs font-semibold">Dinas Luar</p>
-                  <h1 className="text-2xl font-black text-blue-500 mt-2">{dinasLuar}</h1>
+                  <h1 className="text-2xl font-black text-blue-500 mt-2">{listDinasLuar.length}</h1>
                 </div>
                 <div className="bg-blue-100 p-2.5 rounded-2xl">
                   <Briefcase className="text-blue-500" size={20} />
@@ -241,11 +299,14 @@ const ListPresensi = () => {
             </div>
 
             {/* Tugas Belajar */}
-            <div className="bg-white rounded-3xl p-4 shadow-lg border border-indigo-100">
+            <div 
+              onClick={() => openDetailModal("Daftar Tugas Belajar", listTugasBelajar)}
+              className="bg-white rounded-3xl p-4 shadow-lg border border-indigo-100 cursor-pointer hover:shadow-xl hover:border-indigo-300 transition-all"
+            >
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-gray-500 text-xs font-semibold">Tugas Belajar</p>
-                  <h1 className="text-2xl font-black text-indigo-600 mt-2">{tugasBelajar}</h1>
+                  <h1 className="text-2xl font-black text-indigo-600 mt-2">{listTugasBelajar.length}</h1>
                 </div>
                 <div className="bg-indigo-100 p-2.5 rounded-2xl">
                   <BookOpen className="text-indigo-600" size={20} />
@@ -253,18 +314,22 @@ const ListPresensi = () => {
               </div>
             </div>
 
-            {/* Tidak Hadir (Card Terakhir: Lebar Full / Col Span Penuh) */}
-            <div className="bg-white rounded-3xl p-4 shadow-lg border border-rose-100 col-span-2 md:col-span-3 lg:col-span-4">
+            {/* Tidak Hadir */}
+            <div 
+              onClick={() => openDetailModal("Daftar Tidak Hadir", listTidakHadir)}
+              className="bg-white rounded-3xl p-4 shadow-lg border border-rose-100 col-span-2 md:col-span-3 lg:col-span-4 cursor-pointer hover:shadow-xl hover:border-rose-300 transition-all"
+            >
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-gray-500 text-xs font-semibold">Tidak Hadir</p>
-                  <h1 className="text-2xl font-black text-rose-500 mt-1">{tidakHadir}</h1>
+                  <h1 className="text-2xl font-black text-rose-500 mt-1">{listTidakHadir.length}</h1>
                 </div>
                 <div className="bg-rose-100 p-3 rounded-2xl">
                   <UserX className="text-rose-500" size={22} />
                 </div>
               </div>
             </div>
+
           </div>
 
           <AttendanceCalendar 
@@ -277,6 +342,77 @@ const ListPresensi = () => {
 
         </div>
       </div>
+
+      {/* --- MODAL DETAIL TANGGAL STATUS --- */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-xl border border-slate-100 w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-black text-slate-800">{modalTitle}</h3>
+                <p className="text-xs text-slate-400 font-medium mt-0.5">
+                  Periode: {months.find(m => m.value === selectedMonth)?.label} {selectedYear}
+                </p>
+              </div>
+              <button
+                onClick={() => setModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 overflow-y-auto space-y-3 flex-1">
+              {modalItems.length === 0 ? (
+                <div className="text-center py-10 text-gray-400 text-sm">
+                  Tidak ada data untuk status ini pada bulan tersebut.
+                </div>
+              ) : (
+                modalItems.map((item, idx) => {
+                  const targetDate = item.jam_masuk || item.createdAt;
+                  return (
+                    <div 
+                      key={item.id || idx}
+                      className="bg-slate-50 border border-slate-200/60 p-4 rounded-2xl flex flex-col gap-1.5"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-lg">
+                          {formatTanggalWIB(targetDate)}
+                        </span>
+                        {item.status === "hadir" && item.jam_masuk && (
+                          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
+                            Masuk: {formatJamWIB(item.jam_masuk)}
+                          </span>
+                        )}
+                      </div>
+
+                      {item.keterangan && (
+                        <p className="text-xs text-slate-600 mt-1">
+                          <span className="font-semibold text-slate-700">Keterangan:</span> {item.keterangan}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+              <button
+                onClick={() => setModalOpen(false)}
+                className="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-5 py-2.5 rounded-xl transition-colors"
+              >
+                Tutup
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </>
   );
 };
