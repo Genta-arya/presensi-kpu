@@ -32,7 +32,7 @@ const AbsenLayout = () => {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isAbsen, setIsAbsen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showPinModal, setShowPinModal] = useState(true);
+  const [showPinModal, setShowPinModal] = useState(false);
   const sigCanvas = useRef();
 
   const navigate = useNavigate();
