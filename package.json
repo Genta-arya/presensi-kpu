@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-build-classic": "^41.4.2",
+    "@ckeditor/ckeditor5-react": "^11.2.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "@react-three/rapier": "^2.2.0",
@@ -17,11 +19,13 @@
     "axios": "^1.10.0",
     "date-fns": "^4.4.0",
     "docxtemplater": "^3.69.3",
+    "docxtemplater-image-module-free": "^1.1.1",
     "dompurify": "^3.3.1",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.18.1",
     "froala-editor": "^5.0.0",
+    "html-docx-js": "^0.3.1",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "leaflet": "^1.9.4",

@@ -103,10 +103,11 @@ const DetailLaporan = () => {
       });
 
       const subbagianNama =
-        data.user?.strukturUnit?.[0]?.unitKerja?.nama ||
-        "Teknis Penyelenggaraan Pemilu dan Hukum";
+        data.user?.strukturUnit?.[0]?.unitKerja?.nama || "-";
 
       const cleanDescription = getCleanDescription();
+
+      console.log(subbagianNama, cleanDescription);
 
       doc.render({
         nama: user?.name || data.user?.name || "-",
@@ -177,7 +178,7 @@ const DetailLaporan = () => {
 
       {/* Konten Utama */}
       <div className="min-h-screen bg-gray-100 p-4 sm:p-8 flex justify-center pb-24">
-        <div className="w-full max-w-3xl bg-white shadow-md rounded-lg p-6 sm:p-12 space-y-6 overflow-hidden">
+        <div className="w-full  bg-white shadow-md rounded-lg p-6 sm:p-12 space-y-6 overflow-hidden">
           <div className="space-y-2 border-b pb-4 break-words">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
               {data.judul}

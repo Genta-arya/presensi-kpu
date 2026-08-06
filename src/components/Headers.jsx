@@ -79,8 +79,8 @@ const Headers = () => {
   // Cek apakah waktu server sudah memenuhi syarat buka tombol (Jam 07:30 UTC)
   const isWaktuMasukBuka = hours > 7 || (hours === 7 && minutes >= 30);
   
-  // Cek apakah waktu server sudah memenuhi syarat pulang (Jam 16:00 UTC)
-  const isWaktuPulangBuka = hours >= 16;
+  // Cek apakah waktu server sudah memenuhi syarat pulang (Jam 15:00 UTC)
+  const isWaktuPulangBuka = hours >= 15;
 
   // Penentuan aktif/tidaknya tombol
   const canClickMasuk = !isCutiAtauLibur && isWaktuMasukBuka && !absenHariIni;

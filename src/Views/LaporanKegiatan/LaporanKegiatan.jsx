@@ -28,12 +28,23 @@ import { Helmet } from "react-helmet-async";
 
 const LaporanKegiatan = () => {
   const [search, setSearch] = useState("");
-  // Jika ingin default langsung memuat semua laporan tanpa filter tanggal awal, ganti string kosong atau tetap hari ini. 
+  // Jika ingin default langsung memuat semua laporan tanpa filter tanggal awal, ganti string kosong atau tetap hari ini.
   // Di sini kita buat default kosong atau bisa diisi string tanggal. Biar fleksibel, kita buat state date bisa null/kosong.
-  const [date, setDate] = useState(""); 
+  const [date, setDate] = useState("");
   const [showEditor, setShowEditor] = useState(false);
   const [editorContent, setEditorContent] = useState("");
-  const [judul, setJudul] = useState("");
+  const getFormattedDate = () => {
+    const options = {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    };
+    return new Date().toLocaleDateString("id-ID", options);
+  };
+
+  // Inisialisasi state dengan template dinamis
+  const [judul, setJudul] = useState(`Laporan Harian, ${getFormattedDate()}`);
   const [tanggal, setTanggal] = useState(
     new Date().toISOString().split("T")[0],
   );
@@ -164,7 +175,7 @@ const LaporanKegiatan = () => {
         >
           <FaChevronLeft size={18} />
           <p className="ml-2 text-lg font-bold">
-          {editingId ? "Edit Laporan" : "Buat Laporan Baru"}
+            {editingId ? "Edit Laporan" : "Buat Laporan Baru"}
           </p>
         </button>
 
@@ -257,7 +268,7 @@ const LaporanKegiatan = () => {
               <CalendarIcon size={14} className="text-red-600" />
               <span>Filter Tanggal</span>
             </div>
-            
+
             {/* Tombol Clear / Reset Filter */}
             {date && (
               <button
@@ -274,6 +285,7 @@ const LaporanKegiatan = () => {
             <div className="relative flex-1">
               <input
                 type="date"
+                placeholder="Pilih Tanggal"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 className="w-full border px-3 py-2 rounded-lg text-sm bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
@@ -294,7 +306,6 @@ const LaporanKegiatan = () => {
           </div>
 
           {/* Keterangan Status Filter Aktif */}
-         
         </div>
 
         {/* LIST LAPORAN */}
@@ -302,7 +313,7 @@ const LaporanKegiatan = () => {
           <div className="text-center py-10 bg-white rounded-xl border border-dashed border-gray-200 p-6">
             <p className="text-gray-400 text-sm">Tidak ada laporan ditemukan</p>
             {date && (
-              <button 
+              <button
                 onClick={() => setDate("")}
                 className="mt-2 text-xs text-red-600 font-semibold underline"
               >
@@ -391,7 +402,5 @@ const LaporanKegiatan = () => {
     </>
   );
 };
-
-
 
 export default LaporanKegiatan;

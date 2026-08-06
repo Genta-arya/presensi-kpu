@@ -115,7 +115,7 @@ const ListPresensi = () => {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-red-50 via-white to-white pt-20 pb-10">
-        <div className="max-w-6xl mx-auto px-4">
+        <div className=" mx-auto px-4">
           
           {/* HEADER */}
           <div className="bg-gradient-to-r from-red-600 via-red-500 to-red-400 rounded-[32px] p-6 shadow-2xl text-white relative overflow-hidden">
@@ -334,14 +334,14 @@ const ListPresensi = () => {
       {/* --- MODAL DETAIL HARI & TANGGAL (DENGAN SCROLL) --- */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-xl border border-slate-100 w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
+          <div className="bg-white rounded-3xl shadow-xl border border-slate-100 w-full max-w-3xl overflow-hidden flex flex-col max-h-[80vh]">
             
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5 border-b border-slate-100">
               <div>
                 <h3 className="text-base font-black text-slate-800">{modalTitle}</h3>
                 <p className="text-xs text-slate-400 font-medium mt-0.5">
-                  Periode: {months.find(m => m.value === selectedMonth)?.label} {selectedYear} ({modalItems.length} Data)
+                  Periode: {months.find(m => m.value === selectedMonth)?.label} {selectedYear} ({modalItems.length} Hari)
                 </p>
               </div>
               <button

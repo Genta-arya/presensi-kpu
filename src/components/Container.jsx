@@ -25,8 +25,13 @@ const Container = ({ children }) => {
 
   return (
     <>
+
       <AnimatePresence>
+       
         {showSplash && (
+          <>
+        
+          
           <motion.div
             className="fixed inset-0 z-50 bg-white flex flex-col justify-center items-center text-center px-8"
             initial={{ opacity: 1 }}
@@ -34,33 +39,28 @@ const Container = ({ children }) => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6 }}
           >
+            
             <motion.img
               src={icon}
               alt="Logo KPU"
-              className="w-32 h-32 mb-6"
+              className="w-40  mb-6"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.8 }}
             />
 
-            <motion.h1
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8 }}
-              className="text-2xl font-bold text-red-600 mb-2"
-            >
-              E-Presensi
-            </motion.h1>
+           
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="text-sm font-bold text-gray-700 leading-snug text-center"
+              className="text-sm font-extrabold uppercase text-gray-700 leading-snug text-center"
             >
               <p>Komisi Pemilihan Umum</p>
               <p>Kabupaten Sekadau</p>
             </motion.div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
 
