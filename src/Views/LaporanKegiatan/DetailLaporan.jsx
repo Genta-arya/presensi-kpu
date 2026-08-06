@@ -103,8 +103,9 @@ const DetailLaporan = () => {
       });
 
       const subbagianNama =
-        data.user?.strukturUnit?.[0]?.unitKerja?.nama || "-";
-
+        data.user?.strukturUnit?.[0]?.unitKerja?.nama ||
+        user?.strukturUnit?.[0]?.unitKerja?.nama ||
+        "-";
       const cleanDescription = getCleanDescription();
 
       console.log(subbagianNama, cleanDescription);
